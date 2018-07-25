@@ -30,16 +30,22 @@ ID3DXFont*              gpFont = NULL;				// 폰트
 LPD3DXMESH				gpSphere = NULL;
 
 // 쉐이더
-LPD3DXEFFECT			gpTextureMappingShader = NULL;
-
+//LPD3DXEFFECT			gpTextureMappingShader = NULL;
+LPD3DXEFFECT			gpLightingShader = NULL;
 // 텍스처
-LPDIRECT3DTEXTURE9		gpEarthDM = NULL;
+//LPDIRECT3DTEXTURE9		gpEarthDM = NULL;
 
 // 프로그램 이름
 const char*				gAppName = "데모 프레임워크";
 
 // 회전값
 float					gRotationY = 0.0f;
+
+//빛의 위치
+D3DXVECTOR4				gWorldLightPosition(500.0f, 500.0f, -500.0f, 1.0f);
+
+//카메라 위치
+D3DXVECTOR4				gWorldCameraPosition(0.0f, 0.0f, -200.0f, 1.0f);
 
 //-----------------------------------------------------------------------
 // 프로그램 진입점/메시지 루프
@@ -167,7 +173,7 @@ void RenderScene()
 {
 	// 뷰 행렬을 만든다.
 	D3DXMATRIXA16			matView;
-	D3DXVECTOR3 vEyePt(0.0f, 0.0f, -200.0f);
+	D3DXVECTOR3 vEyePt(gWorldCameraPosition.x, gWorldCameraPosition.y, gWorldCameraPosition.z);
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
@@ -177,37 +183,40 @@ void RenderScene()
 	D3DXMatrixPerspectiveFovLH(&matProjection, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
 	// 프레임마다 0.4도씩 회전을 시킨다.
-	gRotationY += 0.4f * PI / 180.0f;
-	if (gRotationY > 2 * PI)
-	{
-		gRotationY -= 2 * PI;
-	}
+	//gRotationY += 0.4f * PI / 180.0f;
+	//if (gRotationY > 2 * PI)
+	//{
+	//	gRotationY -= 2 * PI;
+	//}
 
 	// 월드행렬을 만든다.
 	D3DXMATRIXA16			matWorld;
 	D3DXMatrixRotationY(&matWorld, gRotationY);
 
+
 	// 쉐이더 전역변수들을 설정
-	gpTextureMappingShader->SetMatrix("gWorldMatrix", &matWorld);
-	gpTextureMappingShader->SetMatrix("gViewMatrix", &matView);
-	gpTextureMappingShader->SetMatrix("gProjectionMatrix", &matProjection);
-	gpTextureMappingShader->SetTexture("DiffuseMap_Tex", gpEarthDM);
+	gpLightingShader->SetMatrix("gWorldMatrix", &matWorld);
+	gpLightingShader->SetMatrix("gViewMatrix", &matView);
+	gpLightingShader->SetMatrix("gProjectionMatrix", &matProjection);
+	gpLightingShader->SetVector("gWorldLightPosition", &gWorldLightPosition);
+	gpLightingShader->SetVector("gWorldCameraPosition", &gWorldCameraPosition);
+	//gpTextureMappingShader->SetTexture("DiffuseMap_Tex", gpEarthDM);
 
 	// 쉐이더를 시작한다.
 	UINT numPasses = 0;
-	gpTextureMappingShader->Begin(&numPasses, NULL);
+	gpLightingShader->Begin(&numPasses, NULL);
 	{
 		for (UINT i = 0; i < numPasses; ++i)
 		{
-			gpTextureMappingShader->BeginPass(i);
+			gpLightingShader->BeginPass(i);
 			{
 				// 구체를 그린다.
 				gpSphere->DrawSubset(0);
 			}
-			gpTextureMappingShader->EndPass();
+			gpLightingShader->EndPass();
 		}
 	}
-	gpTextureMappingShader->End();
+	gpLightingShader->End();
 }
 
 // 디버그 정보 등을 출력.
@@ -273,8 +282,10 @@ bool InitD3D(HWND hWnd)
 	d3dpp.BackBufferHeight = WIN_HEIGHT;
 	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 	d3dpp.BackBufferCount = 1;
+
 	d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
 	d3dpp.MultiSampleQuality = 0;
+
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.hDeviceWindow = hWnd;
 	d3dpp.Windowed = TRUE;
@@ -298,15 +309,15 @@ bool InitD3D(HWND hWnd)
 bool LoadAssets()
 {
 	// 텍스처 로딩
-	gpEarthDM = LoadTexture("Earth.jpg");
-	if (!gpEarthDM)
-	{
-		return false;
-	}
+	//gpEarthDM = LoadTexture("Earth.jpg");
+	//if (!gpEarthDM)
+	//{
+	//	return false;
+	//}
 
-	// 쉐이더 로딩
-	gpTextureMappingShader = LoadShader("TextureMapping.fx");
-	if (!gpTextureMappingShader)
+	// 셰이더 로딩
+	gpLightingShader = LoadShader("Lighting.fx");
+	if (!gpLightingShader)
 	{
 		return false;
 	}
@@ -403,18 +414,18 @@ void Cleanup()
 	}
 
 	// 쉐이더를 release 한다.
-	if (gpTextureMappingShader)
+	if (gpLightingShader)
 	{
-		gpTextureMappingShader->Release();
-		gpTextureMappingShader = NULL;
+		gpLightingShader->Release();
+		gpLightingShader = NULL;
 	}
 
 	// 텍스처를 release 한다.
-	if (gpEarthDM)
-	{
-		gpEarthDM->Release();
-		gpEarthDM = NULL;
-	}
+	//if (gpEarthDM)
+	//{
+	//	gpEarthDM->Release();
+	//	gpEarthDM = NULL;
+	//}
 
 	// D3D를 release 한다.
 	if (gpD3DDevice)
