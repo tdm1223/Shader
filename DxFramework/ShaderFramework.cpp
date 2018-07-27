@@ -27,12 +27,14 @@ LPDIRECT3DDEVICE9       gpD3DDevice = NULL;			// D3D 장치
 ID3DXFont*              gpFont = NULL;				// 폰트
 
 // 모델
-LPD3DXMESH				gpSphere = NULL;
+//LPD3DXMESH				gpSphere = NULL;
+LPD3DXMESH				gpTeapot = NULL;
 
 // 쉐이더
 //LPD3DXEFFECT			gpTextureMappingShader = NULL;
 //LPD3DXEFFECT			gpLightingShader = NULL;
-LPD3DXEFFECT			gpSpecularMappingShader = NULL;
+//LPD3DXEFFECT			gpSpecularMappingShader = NULL;
+LPD3DXEFFECT			gpToonShader = NULL;
 
 // 텍스처
 //LPDIRECT3DTEXTURE9		gpEarthDM = NULL;
@@ -53,6 +55,10 @@ D3DXVECTOR4				gWorldCameraPosition(0.0f, 0.0f, -200.0f, 1.0f);
 
 //빛의 색상
 D3DXVECTOR4				gLightColor(0.7f, 0.7f, 1.0f, 1.0f);
+
+//표면의 색상
+D3DXVECTOR4				gSurfaceColor = D3DXVECTOR4(1.0f, 1.0f, 0.0f, 1.0f); //노란색 
+
 //-----------------------------------------------------------------------
 // 프로그램 진입점/메시지 루프
 //-----------------------------------------------------------------------
@@ -139,9 +145,7 @@ void ProcessInput(HWND hWnd, WPARAM keyPress)
 	}
 }
 
-//------------------------------------------------------------
-// 게임루프
-//------------------------------------------------------------
+//게임 루프
 void PlayDemo()
 {
 	Update();
@@ -153,10 +157,7 @@ void Update()
 {
 }
 
-//------------------------------------------------------------
-// 렌더링
-//------------------------------------------------------------
-
+//렌더링
 void RenderFrame()
 {
 	D3DCOLOR bgColour = 0xFF0000FF;	// 배경색상 - 파랑
@@ -172,7 +173,6 @@ void RenderFrame()
 
 	gpD3DDevice->Present(NULL, NULL, NULL, NULL);
 }
-
 
 // 3D 물체등을 그린다.
 void RenderScene()
@@ -199,33 +199,47 @@ void RenderScene()
 	D3DXMATRIXA16			matWorld;
 	D3DXMatrixRotationY(&matWorld, gRotationY);
 
+	//월드행렬의 역행렬을 구한다.
+	D3DXMATRIXA16 matInvWorld;
+	D3DXMatrixTranspose(&matInvWorld, &matWorld);
+
+	//월드 뷰 투영 행렬순으로 미리 곱한다.
+	D3DXMATRIXA16 matWorldView;
+	D3DXMATRIXA16 matWorldViewProjection;
+	D3DXMatrixMultiply(&matWorldView, &matWorld, &matView);
+	D3DXMatrixMultiply(&matWorldViewProjection, &matWorldView, &matProjection);
 
 	// 쉐이더 전역변수들을 설정
-	gpSpecularMappingShader->SetMatrix("gWorldMatrix", &matWorld);
-	gpSpecularMappingShader->SetMatrix("gViewMatrix", &matView);
-	gpSpecularMappingShader->SetMatrix("gProjectionMatrix", &matProjection);
-	gpSpecularMappingShader->SetVector("gWorldLightPosition", &gWorldLightPosition);
-	gpSpecularMappingShader->SetVector("gWorldCameraPosition", &gWorldCameraPosition);
-	gpSpecularMappingShader->SetVector("gLightColor", &gLightColor);
-	gpSpecularMappingShader->SetTexture("DiffuseMap_Tex", gpStoneDM);
-	gpSpecularMappingShader->SetTexture("SpecularMap_Tex", gpStoneSM);
+	gpToonShader->SetMatrix("gWorldViewProjectionMatrix", &matWorldViewProjection);
+	gpToonShader->SetMatrix("gInvWorldMatrix", &matInvWorld);
+
+	gpToonShader->SetVector("gWorldLightPosition", &gWorldLightPosition);
+	gpToonShader->SetVector("gSurfaceColor", &gSurfaceColor);
+	//gpToonShader->SetVector("gWorldCameraPosition", &gWorldCameraPosition);
+	//gpToonShader->SetVector("gLightColor", &gLightColor);
+
+	gpToonShader->SetTexture("DiffuseMap_Tex", gpStoneDM);
+	gpToonShader->SetTexture("SpecularMap_Tex", gpStoneSM);
 	//gpTextureMappingShader->SetTexture("DiffuseMap_Tex", gpEarthDM);
 
 	// 쉐이더를 시작한다.
 	UINT numPasses = 0;
-	gpSpecularMappingShader->Begin(&numPasses, NULL);
+	gpToonShader->Begin(&numPasses, NULL);
 	{
 		for (UINT i = 0; i < numPasses; ++i)
 		{
-			gpSpecularMappingShader->BeginPass(i);
+			gpToonShader->BeginPass(i);
 			{
 				// 구체를 그린다.
-				gpSphere->DrawSubset(0);
+				//gpSphere->DrawSubset(0);
+
+				//주전자를 그린다.
+				gpTeapot->DrawSubset(0);
 			}
-			gpSpecularMappingShader->EndPass();
+			gpToonShader->EndPass();
 		}
 	}
-	gpSpecularMappingShader->End();
+	gpToonShader->End();
 }
 
 // 디버그 정보 등을 출력.
@@ -245,9 +259,7 @@ void RenderInfo()
 	gpFont->DrawText(NULL, "데모 프레임워크\n\nESC: 데모종료", -1, &rct, 0, fontColor);
 }
 
-//------------------------------------------------------------
-// 초기화 코드
-//------------------------------------------------------------
+//초기화 코드
 bool InitEverything(HWND hWnd)
 {
 	// D3D를 초기화
@@ -315,6 +327,7 @@ bool InitD3D(HWND hWnd)
 	return true;
 }
 
+//에셋 로딩
 bool LoadAssets()
 {
 	// 텍스처 로딩
@@ -335,15 +348,15 @@ bool LoadAssets()
 	}
 
 	// 셰이더 로딩
-	gpSpecularMappingShader = LoadShader("SpecularMapping.fx");
-	if (!gpSpecularMappingShader)
+	gpToonShader = LoadShader("ToonShader.fx");
+	if (!gpToonShader)
 	{
 		return false;
 	}
 
 	// 모델 로딩
-	gpSphere = LoadModel("sphere.x");
-	if (!gpSphere)
+	gpTeapot= LoadModel("Teapot.x");
+	if (!gpTeapot)
 	{
 		return false;
 	}
@@ -412,10 +425,8 @@ LPDIRECT3DTEXTURE9 LoadTexture(const char * filename)
 
 	return ret;
 }
-//------------------------------------------------------------
-// 뒷정리 코드.
-//------------------------------------------------------------
 
+// 뒷 정리 코드
 void Cleanup()
 {
 	// 폰트를 release 한다.
@@ -426,17 +437,22 @@ void Cleanup()
 	}
 
 	// 모델을 release 한다.
-	if (gpSphere)
+	//if (gpSphere)
+	//{
+	//	gpSphere->Release();
+	//	gpSphere = NULL;
+	//}
+	if (gpTeapot)
 	{
-		gpSphere->Release();
-		gpSphere = NULL;
+		gpTeapot->Release();
+		gpTeapot = NULL;
 	}
 
 	// 쉐이더를 release 한다.
-	if (gpSpecularMappingShader)
+	if (gpToonShader)
 	{
-		gpSpecularMappingShader->Release();
-		gpSpecularMappingShader = NULL;
+		gpToonShader->Release();
+		gpToonShader = NULL;
 	}
 
 	// 텍스처를 release 한다.
