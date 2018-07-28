@@ -27,19 +27,21 @@ LPDIRECT3DDEVICE9       gpD3DDevice = NULL;			// D3D 장치
 ID3DXFont*              gpFont = NULL;				// 폰트
 
 // 모델
-//LPD3DXMESH				gpSphere = NULL;
-LPD3DXMESH				gpTeapot = NULL;
+LPD3DXMESH				gpSphere = NULL;
+//LPD3DXMESH				gpTeapot = NULL;
 
 // 쉐이더
 //LPD3DXEFFECT			gpTextureMappingShader = NULL;
 //LPD3DXEFFECT			gpLightingShader = NULL;
 //LPD3DXEFFECT			gpSpecularMappingShader = NULL;
-LPD3DXEFFECT			gpToonShader = NULL;
+//LPD3DXEFFECT			gpToonShader = NULL;
+LPD3DXEFFECT			gpNormalMappingShader = NULL;
 
 // 텍스처
 //LPDIRECT3DTEXTURE9		gpEarthDM = NULL;
 LPDIRECT3DTEXTURE9		gpStoneDM = NULL;
 LPDIRECT3DTEXTURE9		gpStoneSM = NULL;
+LPDIRECT3DTEXTURE9		gpStoneNM = NULL;
 
 // 프로그램 이름
 const char*				gAppName = "데모 프레임워크";
@@ -200,8 +202,8 @@ void RenderScene()
 	D3DXMatrixRotationY(&matWorld, gRotationY);
 
 	//월드행렬의 역행렬을 구한다.
-	D3DXMATRIXA16 matInvWorld;
-	D3DXMatrixTranspose(&matInvWorld, &matWorld);
+	//D3DXMATRIXA16 matInvWorld;
+	//D3DXMatrixTranspose(&matInvWorld, &matWorld);
 
 	//월드 뷰 투영 행렬순으로 미리 곱한다.
 	D3DXMATRIXA16 matWorldView;
@@ -210,36 +212,39 @@ void RenderScene()
 	D3DXMatrixMultiply(&matWorldViewProjection, &matWorldView, &matProjection);
 
 	// 쉐이더 전역변수들을 설정
-	gpToonShader->SetMatrix("gWorldViewProjectionMatrix", &matWorldViewProjection);
-	gpToonShader->SetMatrix("gInvWorldMatrix", &matInvWorld);
+	gpNormalMappingShader->SetMatrix("gWorldMatrix", &matWorld);
+	gpNormalMappingShader->SetMatrix("gWorldViewProjectionMatrix", &matWorldViewProjection);
+	//gpNormalMappingShader->SetMatrix("gInvWorldMatrix", &matInvWorld);
 
-	gpToonShader->SetVector("gWorldLightPosition", &gWorldLightPosition);
-	gpToonShader->SetVector("gSurfaceColor", &gSurfaceColor);
+	gpNormalMappingShader->SetVector("gWorldLightPosition", &gWorldLightPosition);
+	gpNormalMappingShader->SetVector("gSurfaceColor", &gSurfaceColor);
+	gpNormalMappingShader->SetVector("gLightColor",&gLightColor);
 	//gpToonShader->SetVector("gWorldCameraPosition", &gWorldCameraPosition);
 	//gpToonShader->SetVector("gLightColor", &gLightColor);
 
-	gpToonShader->SetTexture("DiffuseMap_Tex", gpStoneDM);
-	gpToonShader->SetTexture("SpecularMap_Tex", gpStoneSM);
+	gpNormalMappingShader->SetTexture("DiffuseMap_Tex", gpStoneDM);
+	gpNormalMappingShader->SetTexture("SpecularMap_Tex", gpStoneSM);
+	gpNormalMappingShader->SetTexture("NormalMap_Tex", gpStoneNM);
 	//gpTextureMappingShader->SetTexture("DiffuseMap_Tex", gpEarthDM);
 
 	// 쉐이더를 시작한다.
 	UINT numPasses = 0;
-	gpToonShader->Begin(&numPasses, NULL);
+	gpNormalMappingShader->Begin(&numPasses, NULL);
 	{
 		for (UINT i = 0; i < numPasses; ++i)
 		{
-			gpToonShader->BeginPass(i);
+			gpNormalMappingShader->BeginPass(i);
 			{
 				// 구체를 그린다.
-				//gpSphere->DrawSubset(0);
+				gpSphere->DrawSubset(0);
 
 				//주전자를 그린다.
-				gpTeapot->DrawSubset(0);
+				//gpTeapot->DrawSubset(0);
 			}
-			gpToonShader->EndPass();
+			gpNormalMappingShader->EndPass();
 		}
 	}
-	gpToonShader->End();
+	gpNormalMappingShader->End();
 }
 
 // 디버그 정보 등을 출력.
@@ -346,17 +351,26 @@ bool LoadAssets()
 	{
 		return false;
 	}
-
+	gpStoneNM = LoadTexture("Fieldstone_NM.tga");
+	if (!gpStoneNM)
+	{
+		return false;
+	}
 	// 셰이더 로딩
-	gpToonShader = LoadShader("ToonShader.fx");
-	if (!gpToonShader)
+	gpNormalMappingShader = LoadShader("NormalMapping.fx");
+	if (!gpNormalMappingShader)
 	{
 		return false;
 	}
 
 	// 모델 로딩
-	gpTeapot= LoadModel("Teapot.x");
-	if (!gpTeapot)
+	//gpTeapot= LoadModel("Teapot.x");
+	//if (!gpTeapot)
+	//{
+	//	return false;
+	//}
+	gpSphere= LoadModel("spherewithtangent.x");
+	if (!gpSphere)
 	{
 		return false;
 	}
@@ -437,22 +451,22 @@ void Cleanup()
 	}
 
 	// 모델을 release 한다.
-	//if (gpSphere)
-	//{
-	//	gpSphere->Release();
-	//	gpSphere = NULL;
-	//}
-	if (gpTeapot)
+	if (gpSphere)
 	{
-		gpTeapot->Release();
-		gpTeapot = NULL;
+		gpSphere->Release();
+		gpSphere = NULL;
 	}
+	//if (gpTeapot)
+	//{
+	//	gpTeapot->Release();
+	//	gpTeapot = NULL;
+	//}
 
 	// 쉐이더를 release 한다.
-	if (gpToonShader)
+	if (gpNormalMappingShader)
 	{
-		gpToonShader->Release();
-		gpToonShader = NULL;
+		gpNormalMappingShader->Release();
+		gpNormalMappingShader = NULL;
 	}
 
 	// 텍스처를 release 한다.
@@ -472,6 +486,12 @@ void Cleanup()
 	{
 		gpStoneSM->Release();
 		gpStoneSM = NULL;
+	}
+
+	if (gpStoneNM)
+	{
+		gpStoneNM->Release();
+		gpStoneNM = NULL;
 	}
 
 	// D3D를 release 한다.
