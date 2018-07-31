@@ -21,14 +21,14 @@
 
 // D3D 관련
 LPDIRECT3D9             gpD3D = NULL;				// D3D
-LPDIRECT3DDEVICE9       gpD3DDevice = NULL;			// D3D 장치
+LPDIRECT3DDEVICE9       gpD3DDevice = NULL;			// D3D 장치												
+ID3DXFont*              gpFont = NULL;				//폰트		
 
-
-ID3DXFont*              gpFont = NULL;				// 폰트
-
-// 모델
-//LPD3DXMESH				gpSphere = NULL;
-LPD3DXMESH				gpTeapot = NULL;
+													// 모델
+													//LPD3DXMESH				gpSphere = NULL;
+													//LPD3DXMESH				gpTeapot = NULL;
+LPD3DXMESH					gpTorus = NULL;
+LPD3DXMESH					gpDisc = NULL;
 
 // 쉐이더
 //LPD3DXEFFECT			gpTextureMappingShader = NULL;
@@ -36,14 +36,17 @@ LPD3DXMESH				gpTeapot = NULL;
 //LPD3DXEFFECT			gpSpecularMappingShader = NULL;
 //LPD3DXEFFECT			gpToonShader = NULL;
 //LPD3DXEFFECT			gpNormalMappingShader = NULL;
-LPD3DXEFFECT			gpEnvironmentMappingShader = NULL;
+//LPD3DXEFFECT			gpEnvironmentMappingShader = NULL;
+//LPD3DXEFFECT			gpUVAnimationShader = NULL;
+LPD3DXEFFECT			gpApplyShadowShader = NULL;
+LPD3DXEFFECT			gpCreateShadowShader = NULL;
 
 // 텍스처
 //LPDIRECT3DTEXTURE9		gpEarthDM = NULL;
-LPDIRECT3DTEXTURE9		gpStoneDM = NULL;
-LPDIRECT3DTEXTURE9		gpStoneSM = NULL;
-LPDIRECT3DTEXTURE9		gpStoneNM = NULL;
-LPDIRECT3DCUBETEXTURE9	gpSnowENV = NULL;
+//LPDIRECT3DTEXTURE9		gpStoneDM = NULL;
+//LPDIRECT3DTEXTURE9		gpStoneSM = NULL;
+//LPDIRECT3DTEXTURE9		gpStoneNM = NULL;
+//LPDIRECT3DCUBETEXTURE9	gpSnowENV = NULL;
 
 // 프로그램 이름
 const char*				gAppName = "데모 프레임워크";
@@ -58,11 +61,18 @@ D3DXVECTOR4				gWorldLightPosition(500.0f, 500.0f, -500.0f, 1.0f);
 D3DXVECTOR4				gWorldCameraPosition(0.0f, 0.0f, -200.0f, 1.0f);
 
 //빛의 색상
-D3DXVECTOR4				gLightColor(0.7f, 0.7f, 1.0f, 1.0f);
+//D3DXVECTOR4				gLightColor(0.7f, 0.7f, 1.0f, 1.0f);
 
 //표면의 색상
 //D3DXVECTOR4				gSurfaceColor = D3DXVECTOR4(1.0f, 1.0f, 0.0f, 1.0f); //노란색 
 
+//물체의 색상
+D3DXVECTOR4				gTorusColor(1, 1, 0, 1);
+D3DXVECTOR4				gDiscColor(0, 1, 1, 1);
+
+//그림자맵 렌더 타깃
+LPDIRECT3DTEXTURE9		gpShadowRenderTarget = NULL;
+LPDIRECT3DSURFACE9		gpShadowDepthStencil = NULL;
 
 //-----------------------------------------------------------------------
 // 프로그램 진입점/메시지 루프
@@ -182,73 +192,152 @@ void RenderFrame()
 // 3D 물체등을 그린다.
 void RenderScene()
 {
-	// 뷰 행렬을 만든다.
-	D3DXMATRIXA16			matView;
-	D3DXVECTOR3 vEyePt(gWorldCameraPosition.x, gWorldCameraPosition.y, gWorldCameraPosition.z);
-	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
-	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
-
-	// 투영행렬을 만든다.
-	D3DXMATRIXA16			matProjection;
-	D3DXMatrixPerspectiveFovLH(&matProjection, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
-
-	// 프레임마다 0.4도씩 회전을 시킨다.
-	gRotationY += 0.4f * PI / 180.0f;
-	if (gRotationY > 2 * PI)
+	// 광원-뷰 행렬을 만든다.
+	D3DXMATRIXA16 matLightView;
 	{
-		gRotationY -= 2 * PI;
+		D3DXVECTOR3 vEyePt(gWorldLightPosition.x, gWorldLightPosition.y, gWorldLightPosition.z);
+		D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
+		D3DXMatrixLookAtLH(&matLightView, &vEyePt, &vLookatPt, &vUpVec);
 	}
 
-	// 월드행렬을 만든다.
-	D3DXMATRIXA16			matWorld;
-	D3DXMatrixRotationY(&matWorld, gRotationY);
+	// 광원-투영 행렬을 만든다.
+	D3DXMATRIXA16 matLightProjection;
+	{
+		D3DXMatrixPerspectiveFovLH(&matLightProjection, D3DX_PI / 4.0f, 1, 1, 3000);
+	}
 
-	//월드행렬의 역행렬을 구한다.
-	//D3DXMATRIXA16 matInvWorld;
-	//D3DXMatrixTranspose(&matInvWorld, &matWorld);
+	// 뷰/투영행렬을 만든다.
+	D3DXMATRIXA16 matViewProjection;
+	{
+		// 뷰 행렬을 만든다.
+		D3DXMATRIXA16 matView;
+		D3DXVECTOR3 vEyePt(gWorldCameraPosition.x, gWorldCameraPosition.y, gWorldCameraPosition.z);
+		D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
+		D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
 
-	//월드 뷰 투영 행렬순으로 미리 곱한다.
-	D3DXMATRIXA16 matWorldView;
-	D3DXMATRIXA16 matWorldViewProjection;
-	D3DXMatrixMultiply(&matWorldView, &matWorld, &matView);
-	D3DXMatrixMultiply(&matWorldViewProjection, &matWorldView, &matProjection);
+		// 투영행렬을 만든다.
+		D3DXMATRIXA16			matProjection;
+		D3DXMatrixPerspectiveFovLH(&matProjection, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
-	// 쉐이더 전역변수들을 설정
-	gpEnvironmentMappingShader->SetMatrix("gWorldMatrix", &matWorld);
-	gpEnvironmentMappingShader->SetMatrix("gWorldViewProjectionMatrix", &matWorldViewProjection);
-	//gpNormalMappingShader->SetMatrix("gInvWorldMatrix", &matInvWorld);
+		D3DXMatrixMultiply(&matViewProjection, &matView, &matProjection);
+	}
 
-	gpEnvironmentMappingShader->SetVector("gWorldLightPosition", &gWorldLightPosition);
-	//gpEnvironmentMappingShader->SetVector("gSurfaceColor", &gSurfaceColor);
-	gpEnvironmentMappingShader->SetVector("gLightColor",&gLightColor);
-	//gpToonShader->SetVector("gWorldCameraPosition", &gWorldCameraPosition);
+	// torus의 월드행렬을 만든다.
+	D3DXMATRIXA16			matTorusWorld;
+	{
+		// 프레임마다 0.4도씩 회전을 시킨다.
+		gRotationY += 0.4f * PI / 180.0f;
+		if (gRotationY > 2 * PI)
+		{
+			gRotationY -= 2 * PI;
+		}
 
-	gpEnvironmentMappingShader->SetVector("gLightColor", &gLightColor);
-	gpEnvironmentMappingShader->SetTexture("DiffuseMap_Tex", gpStoneDM);
-	gpEnvironmentMappingShader->SetTexture("SpecularMap_Tex", gpStoneSM);
-	gpEnvironmentMappingShader->SetTexture("NormalMap_Tex", gpStoneNM);
-	gpEnvironmentMappingShader->SetTexture("EnvironmentMap_Tex", gpSnowENV);
-	//gpTextureMappingShader->SetTexture("DiffuseMap_Tex", gpEarthDM);
+		D3DXMatrixRotationY(&matTorusWorld, gRotationY);
+	}
+
+	// 디스크의 월드행렬을 만든다.
+	D3DXMATRIXA16			matDiscWorld;
+	{
+		D3DXMATRIXA16 matScale;
+		D3DXMatrixScaling(&matScale, 2, 2, 2);
+
+		D3DXMATRIXA16 matTrans;
+		D3DXMatrixTranslation(&matTrans, 0, -40, 0);
+
+		D3DXMatrixMultiply(&matDiscWorld, &matScale, &matTrans);
+	}
+
+	// 현재 하드웨어 벡버퍼와 깊이버퍼
+	LPDIRECT3DSURFACE9 pHWBackBuffer = NULL;//벡버퍼
+	LPDIRECT3DSURFACE9 pHWDepthStencilBuffer = NULL;//깊이버퍼
+	gpD3DDevice->GetRenderTarget(0, &pHWBackBuffer);
+	gpD3DDevice->GetDepthStencilSurface(&pHWDepthStencilBuffer);
+
+	// 1. 그림자 만들기
+	// 그림자 맵의 렌더타깃과 깊이버퍼를 사용한다.
+	LPDIRECT3DSURFACE9 pShadowSurface = NULL;
+	if (SUCCEEDED(gpShadowRenderTarget->GetSurfaceLevel(0, &pShadowSurface)))
+	{
+		gpD3DDevice->SetRenderTarget(0, pShadowSurface);
+		pShadowSurface->Release();
+		pShadowSurface = NULL;
+	}
+	gpD3DDevice->SetDepthStencilSurface(gpShadowDepthStencil);
+
+	// 저번 프레임에 그렸던 그림자 정보를 흰색으로 지움
+	gpD3DDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), 0xFFFFFFFF, 1.0f, 0);
+
+	// 그림자 만들기 쉐이더 전역변수들을 설정
+	gpCreateShadowShader->SetMatrix("gWorldMatrix", &matTorusWorld);
+	gpCreateShadowShader->SetMatrix("gLightViewMatrix", &matLightView);
+	gpCreateShadowShader->SetMatrix("gLightProjectionMatrix", &matLightProjection);
+
+	// 그림자 만들기 쉐이더를 시작
+	{
+		UINT numPasses = 0;
+		gpCreateShadowShader->Begin(&numPasses, NULL);
+		{
+			for (UINT i = 0; i < numPasses; ++i)
+			{
+				gpCreateShadowShader->BeginPass(i);
+				{
+					// 원환체를 그린다.
+					gpTorus->DrawSubset(0);
+				}
+				gpCreateShadowShader->EndPass();
+			}
+		}
+		gpCreateShadowShader->End();
+	}
+
+	// 2. 그림자 입히기
+	// 하드웨어 백버퍼/깊이버퍼를 사용한다.
+	gpD3DDevice->SetRenderTarget(0, pHWBackBuffer);
+	gpD3DDevice->SetDepthStencilSurface(pHWDepthStencilBuffer);
+
+	//참조 카운터가 증가하여 GPU메모리 누수가 나는걸 방지하기 위한 코드
+	pHWBackBuffer->Release();
+	pHWBackBuffer = NULL;
+	pHWDepthStencilBuffer->Release();
+	pHWDepthStencilBuffer = NULL;
+
+	// 그림자 입히기 쉐이더 전역변수들을 설정
+	gpApplyShadowShader->SetMatrix("gWorldMatrix", &matTorusWorld);	//원환체
+	gpApplyShadowShader->SetMatrix("gViewProjectionMatrix", &matViewProjection);//월드/뷰/투영 행렬
+	gpApplyShadowShader->SetMatrix("gLightViewMatrix", &matLightView);//광원-뷰 행렬
+	gpApplyShadowShader->SetMatrix("gLightProjectionMatrix", &matLightProjection);//광원-투영 행렬
+
+	//난반사광
+	gpApplyShadowShader->SetVector("gWorldLightPosition", &gWorldLightPosition);
+
+	gpApplyShadowShader->SetVector("gObjectColor", &gTorusColor);//물체의 색
+
+	gpApplyShadowShader->SetTexture("ShadowMap_Tex", gpShadowRenderTarget);//그림자 맵
+
 
 	// 쉐이더를 시작한다.
 	UINT numPasses = 0;
-	gpEnvironmentMappingShader->Begin(&numPasses, NULL);
+	gpApplyShadowShader->Begin(&numPasses, NULL);
 	{
 		for (UINT i = 0; i < numPasses; ++i)
 		{
-			gpEnvironmentMappingShader->BeginPass(i);
+			gpApplyShadowShader->BeginPass(i);
 			{
-				// 구체를 그린다.
-				//gpSphere->DrawSubset(0);
+				// 원환체를 그린다.
+				gpTorus->DrawSubset(0);
 
-				//주전자를 그린다.
-				gpTeapot->DrawSubset(0);
+				// 디스크를 그린다.
+				gpApplyShadowShader->SetMatrix("gWorldMatrix", &matDiscWorld);
+				gpApplyShadowShader->SetVector("gObjectColor", &gDiscColor);
+				gpApplyShadowShader->CommitChanges(); //블록사이 변수값을 바꿔줄때 호출하는 함수
+				gpDisc->DrawSubset(0);
 			}
-			gpEnvironmentMappingShader->EndPass();
+			gpApplyShadowShader->EndPass();
 		}
 	}
-	gpEnvironmentMappingShader->End();
+	gpApplyShadowShader->End();
 }
 
 // 디버그 정보 등을 출력.
@@ -277,6 +366,21 @@ bool InitEverything(HWND hWnd)
 		return false;
 	}
 
+	//렌더 타깃을 만든다
+	const int shadowMapSize = 2048;
+	if (FAILED(gpD3DDevice->CreateTexture(shadowMapSize, shadowMapSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,
+		D3DPOOL_DEFAULT, &gpShadowRenderTarget, NULL)))
+	{
+		return false;
+	}
+
+	//그림자 맵과 동일한 크기의 깊이 버퍼를 만든다.
+	if (FAILED(gpD3DDevice->CreateDepthStencilSurface(shadowMapSize, shadowMapSize,
+		D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &gpShadowDepthStencil, NULL)))
+	{
+		return false;
+	}
+
 	// 모델, 쉐이더, 텍스처등을 로딩
 	if (!LoadAssets())
 	{
@@ -290,6 +394,8 @@ bool InitEverything(HWND hWnd)
 	{
 		return false;
 	}
+
+
 
 	return true;
 }
@@ -312,10 +418,8 @@ bool InitD3D(HWND hWnd)
 	d3dpp.BackBufferHeight = WIN_HEIGHT;
 	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 	d3dpp.BackBufferCount = 1;
-
 	d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
 	d3dpp.MultiSampleQuality = 0;
-
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.hDeviceWindow = hWnd;
 	d3dpp.Windowed = TRUE;
@@ -345,38 +449,42 @@ bool LoadAssets()
 	//{
 	//	return false;
 	//}
-	gpStoneDM = LoadTexture("Fieldstone_DM.tga");
-	if (!gpStoneDM)
-	{
-		return false;
-	}
-	gpStoneSM = LoadTexture("Fieldstone_SM.tga");
-	if (!gpStoneSM)
-	{
-		return false;
-	}
-	gpStoneNM = LoadTexture("Fieldstone_NM.tga");
-	if (!gpStoneNM)
-	{
-		return false;
-	}
-	D3DXCreateCubeTextureFromFile(gpD3DDevice, "Snow_ENV.dds", &gpSnowENV);
-	if (!gpSnowENV)
-	{
-		return false;
-	}
+	//gpStoneDM = LoadTexture("Fieldstone_DM.tga");
+	//if (!gpStoneDM)
+	//{
+	//	return false;
+	//}
+	//gpStoneSM = LoadTexture("Fieldstone_SM.tga");
+	//if (!gpStoneSM)
+	//{
+	//	return false;
+	//}
+	//gpStoneNM = LoadTexture("Fieldstone_NM.tga");
+	//if (!gpStoneNM)
+	//{
+	//	return false;
+	//}
+	//D3DXCreateCubeTextureFromFile(gpD3DDevice, "Snow_ENV.dds", &gpSnowENV);
+	//if (!gpSnowENV)
+	//{
+	//	return false;
+	//}
 
-	// 셰이더 로딩
-	gpEnvironmentMappingShader = LoadShader("EnvironmentMapping.fx");
-	if (!gpEnvironmentMappingShader)
+	// 쉐이더 로딩
+	gpApplyShadowShader = LoadShader("ApplyShadow.fx");
+	if (!gpApplyShadowShader)
 	{
 		return false;
 	}
-
+	gpCreateShadowShader = LoadShader("CreateShadow.fx");
+	if (!gpCreateShadowShader)
+	{
+		return false;
+	}
 
 	// 모델 로딩
-	gpTeapot= LoadModel("TeapotWithTangent.x");
-	if (!gpTeapot)
+	gpTorus = LoadModel("torus.x");
+	if (!gpTorus)
 	{
 		return false;
 	}
@@ -385,9 +493,15 @@ bool LoadAssets()
 	//{
 	//	return false;
 	//}
+	gpDisc = LoadModel("disc.x");
+	if (!gpDisc)
+	{
+		return false;
+	}
 
 	return true;
 }
+
 
 // 쉐이더 로딩
 LPD3DXEFFECT LoadShader(const char * filename)
@@ -400,9 +514,7 @@ LPD3DXEFFECT LoadShader(const char * filename)
 #if _DEBUG
 	dwShaderFlags |= D3DXSHADER_DEBUG;
 #endif
-
-	D3DXCreateEffectFromFile(gpD3DDevice, filename,
-		NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
+	D3DXCreateEffectFromFile(gpD3DDevice, filename, NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
 	// 쉐이더 로딩에 실패한 경우 output창에 쉐이더
 	// 컴파일 에러를 출력한다.
@@ -419,7 +531,6 @@ LPD3DXEFFECT LoadShader(const char * filename)
 			delete[] str;
 		}
 	}
-
 	return ret;
 }
 
@@ -467,17 +578,33 @@ void Cleanup()
 	//	gpSphere->Release();
 	//	gpSphere = NULL;
 	//}
-	if (gpTeapot)
+	//if (gpTeapot)
+	//{
+	//	gpTeapot->Release();
+	//	gpTeapot = NULL;
+	//}
+	if (gpTorus)
 	{
-		gpTeapot->Release();
-		gpTeapot = NULL;
+		gpTorus->Release();
+		gpTorus = NULL;
+	}
+	if (gpDisc)
+	{
+		gpDisc->Release();
+		gpDisc = NULL;
 	}
 
 	// 쉐이더를 release 한다.
-	if (gpEnvironmentMappingShader)
+	if (gpApplyShadowShader)
 	{
-		gpEnvironmentMappingShader->Release();
-		gpEnvironmentMappingShader = NULL;
+		gpApplyShadowShader->Release();
+		gpApplyShadowShader = NULL;
+	}
+
+	if (gpCreateShadowShader)
+	{
+		gpCreateShadowShader->Release();
+		gpCreateShadowShader = NULL;
 	}
 
 	// 텍스처를 release 한다.
@@ -486,24 +613,34 @@ void Cleanup()
 	//	gpEarthDM->Release();
 	//	gpEarthDM = NULL;
 	//}
-
-	if (gpStoneDM)
+	if (gpShadowRenderTarget)
 	{
-		gpStoneDM->Release();
-		gpStoneDM = NULL;
+		gpShadowRenderTarget->Release();
+		gpShadowRenderTarget = NULL;
+	}
+	if (gpShadowDepthStencil)
+	{
+		gpShadowDepthStencil->Release();
+		gpShadowDepthStencil = NULL;
 	}
 
-	if (gpStoneSM)
-	{
-		gpStoneSM->Release();
-		gpStoneSM = NULL;
-	}
+	//if (gpStoneDM)
+	//{
+	//	gpStoneDM->Release();
+	//	gpStoneDM = NULL;
+	//}
 
-	if (gpStoneNM)
-	{
-		gpStoneNM->Release();
-		gpStoneNM = NULL;
-	}
+	//if (gpStoneSM)
+	//{
+	//	gpStoneSM->Release();
+	//	gpStoneSM = NULL;
+	//}
+
+	//if (gpStoneNM)
+	//{
+	//	gpStoneNM->Release();
+	//	gpStoneNM = NULL;
+	//}
 
 	// D3D를 release 한다.
 	if (gpD3DDevice)
@@ -518,10 +655,10 @@ void Cleanup()
 		gpD3D = NULL;
 	}
 
-	if (gpSnowENV)
-	{
-		gpSnowENV->Release();
-		gpSnowENV = NULL;
-	}
+	//if (gpSnowENV)
+	//{
+	//	gpSnowENV->Release();
+	//	gpSnowENV = NULL;
+	//}
 }
 
