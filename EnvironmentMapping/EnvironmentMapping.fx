@@ -15,12 +15,12 @@
 //**************************************************************//
 
 //--------------------------------------------------------------//
-// NormalMapping
+// EnvironmentMapping
 //--------------------------------------------------------------//
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string NormalMapping_Pass_0_Model : ModelData = ".\\SphereWithTangent.x";
+string EnvironmentMapping_Pass_0_Model : ModelData = "..\\DxFramework\\Teapot.x";
 
 float4x4 worldMatrix : World;
 float4x4 worldViewProjectionMatrix : WorldViewProjection;
@@ -56,7 +56,7 @@ struct VS_OUTPUT
    float3 n : TEXCOORD5;
 };
 
-VS_OUTPUT NormalMapping_Pass_0_Vertex_Shader_vs_main( VS_INPUT input )
+VS_OUTPUT EnvironmentMapping_Pass_0_Vertex_Shader_vs_main( VS_INPUT input )
 {
    VS_OUTPUT Output;
 
@@ -90,9 +90,9 @@ struct PS_INPUT
    float2 uv : TEXCOORD0;
    float3 lightDir : TEXCOORD1;
    float3 viewDir: TEXCOORD2;
-   float3 t : TEXCOORD3;
-   float3 b : TEXCOORD4;
-   float3 n : TEXCOORD5;
+   float3 T : TEXCOORD3;
+   float3 B : TEXCOORD4;
+   float3 N : TEXCOORD5;
 };
 
 texture diffuseMap_Tex
@@ -107,7 +107,7 @@ sampler2D diffuseSampler = sampler_state
 };
 texture specularMap_Tex
 <
-   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\fieldstone_SM.tga";
+   string ResourceName = "..\\DxFramework\\Fieldstone_SM.tga";
 >;
 sampler2D specularSampler = sampler_state
 {
@@ -115,13 +115,14 @@ sampler2D specularSampler = sampler_state
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
 };
-texture normalMap_Tex
+sampler2D normalSampler;
+texture environmentMap_Tex
 <
-   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\FieldstoneBumpDOT3.tga";
+   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\Snow.dds";
 >;
-sampler2D normalSampler = sampler_state
+samplerCUBE environmentSampler = sampler_state
 {
-   Texture = (normalMap_Tex);
+   Texture = (environmentMap_Tex);
    MAGFILTER = LINEAR;
    MINFILTER = LINEAR;
 };
@@ -134,21 +135,14 @@ float3 lightColor
    float UIMin = -1.00;
    float UIMax = 1.00;
 > = float3( 0.70, 0.70, 1.00 );
-float power
-<
-   string UIName = "power";
-   string UIWidget = "Numeric";
-   bool UIVisible =  false;
-   float UIMin = -1.00;
-   float UIMax = 1.00;
-> = float( 20.00 );
 
-float4 NormalMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
+float4 EnvironmentMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {
    float3 tangentNormal = tex2D(normalSampler, input.uv).xyz;
    tangentNormal = normalize(tangentNormal * 2 - 1);
+   tangentNormal = float3(0,0,1);
    
-   float3x3 TBN = float3x3(normalize(input.t), normalize(input.b), normalize(input.n));
+   float3x3 TBN = float3x3(normalize(input.T), normalize(input.B), normalize(input.N));
    TBN = transpose(TBN);
    float3 worldNormal = mul(TBN, tangentNormal);
    
@@ -157,33 +151,36 @@ float4 NormalMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
    float3 diffuse = saturate(dot(worldNormal, -lightDir));
    diffuse = lightColor * albedo.rgb * diffuse;
    
+   float3 viewDir = normalize(input.viewDir);
    float3 specular = 0;
    if ( diffuse.x > 0 )
    {
       float3 reflection = reflect(lightDir, worldNormal);
-      float3 viewDir = normalize(input.viewDir); 
 
       specular = saturate(dot(reflection, -viewDir ));
-      specular = pow(specular, power);
+      specular = pow(specular, 20.0f);
       
       float4 specularIntensity  = tex2D(specularSampler, input.uv);
       specular *= specularIntensity.rgb * lightColor;
    }
 
+   float3 viewReflect = reflect(viewDir,worldNormal);
+   float3 environment = texCUBE(environmentSampler,viewReflect).rgb;
+
    float3 ambient = float3(0.1f, 0.1f, 0.1f) * albedo;
    
-   return float4(ambient + diffuse + specular, 1);
+   return float4(ambient + diffuse + specular + environment * 0.5f, 1);
 }
 
 //--------------------------------------------------------------//
-// Technique Section for NormalMapping
+// Technique Section for EnvironmentMapping
 //--------------------------------------------------------------//
-technique NormalMapping
+technique EnvironmentMapping
 {
    pass Pass_0
    {
-      VertexShader = compile vs_2_0 NormalMapping_Pass_0_Vertex_Shader_vs_main();
-      PixelShader = compile ps_2_0 NormalMapping_Pass_0_Pixel_Shader_ps_main();
+      VertexShader = compile vs_2_0 EnvironmentMapping_Pass_0_Vertex_Shader_vs_main();
+      PixelShader = compile ps_2_0 EnvironmentMapping_Pass_0_Pixel_Shader_ps_main();
    }
 
 }

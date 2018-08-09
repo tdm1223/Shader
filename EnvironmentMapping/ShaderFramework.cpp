@@ -25,18 +25,19 @@ LPDIRECT3DDEVICE9       gpD3DDevice = NULL;				// D3D 장치
 ID3DXFont*              gpFont = NULL;
 
 // 모델
-LPD3DXMESH				sphere = NULL;
+LPD3DXMESH				teapot = NULL;
 
 // 쉐이더
-LPD3DXEFFECT			normalMappingShader = NULL;
+LPD3DXEFFECT			environmentMappingShader = NULL;
 
 // 텍스처
 LPDIRECT3DTEXTURE9		stoneDM = NULL;
 LPDIRECT3DTEXTURE9		stoneSM = NULL;
 LPDIRECT3DTEXTURE9		stoneNM = NULL;
+LPDIRECT3DCUBETEXTURE9	snowENV = NULL;
 
 // 프로그램 이름
-const char*				gAppName = "법선 매핑 프레임워크";
+const char*				gAppName = "환경 매핑 프레임워크";
 
 //카메라 위치
 D3DXVECTOR4				worldCameraPosition(0.0f, 0.0f, -200.0f, 1.0f);
@@ -169,7 +170,6 @@ void RenderFrame()
 // 3D 물체등을 그린다.
 void RenderScene()
 {
-
 	// 뷰 행렬을 만든다.
 	D3DXMATRIXA16			viewMatrix;
 	D3DXVECTOR3 eye(worldCameraPosition.x, worldCameraPosition.y, worldCameraPosition.z);
@@ -199,31 +199,32 @@ void RenderScene()
 	D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
 
 	// 쉐이더 전역변수들을 설정
-	normalMappingShader->SetMatrix("worldMatrix", &worldMatrix);
-	normalMappingShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
+	environmentMappingShader->SetMatrix("worldMatrix", &worldMatrix);
+	environmentMappingShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
 
-	normalMappingShader->SetVector("worldCameraPosition", &worldCameraPosition);
-	normalMappingShader->SetVector("worldLightPosition", &worldLightPosition);
-	normalMappingShader->SetFloat("power", Pow);
+	environmentMappingShader->SetVector("worldCameraPosition", &worldCameraPosition);
+	environmentMappingShader->SetVector("worldLightPosition", &worldLightPosition);
+	environmentMappingShader->SetFloat("power", Pow);
 
-	normalMappingShader->SetVector("lightColor", &lightColor);
-	normalMappingShader->SetTexture("diffuseMap_Tex", stoneDM);
-	normalMappingShader->SetTexture("specularMap_Tex", stoneSM);
-	normalMappingShader->SetTexture("normalMap_Tex", stoneNM);
+	environmentMappingShader->SetVector("lightColor", &lightColor);
+	environmentMappingShader->SetTexture("diffuseMap_Tex", stoneDM);
+	environmentMappingShader->SetTexture("specularMap_Tex", stoneSM);
+	environmentMappingShader->SetTexture("normalMap_Tex", stoneNM);
+	environmentMappingShader->SetTexture("environmentMap_Tex", snowENV);
 
 	UINT numPasses = 0;
-	normalMappingShader->Begin(&numPasses, NULL);
+	environmentMappingShader->Begin(&numPasses, NULL);
 	{
 		for (UINT i = 0; i < numPasses; i++)
 		{
-			normalMappingShader->BeginPass(i);
+			environmentMappingShader->BeginPass(i);
 			{
-				sphere->DrawSubset(0);
+				teapot->DrawSubset(0);
 			}
-			normalMappingShader->EndPass();
+			environmentMappingShader->EndPass();
 		}
 	}
-	normalMappingShader->End();
+	environmentMappingShader->End();
 }
 
 // 디버그 정보 등을 출력.
@@ -331,20 +332,26 @@ bool LoadAssets()
 	{
 		return false;
 	}
+	D3DXCreateCubeTextureFromFile(gpD3DDevice, "Snow_ENV.dds", &snowENV);
+	if (!snowENV)
+	{
+		return false;
+	}
 
 	// 쉐이더 로딩
-	normalMappingShader = LoadShader("normalMapping.fx");
-	if (!normalMappingShader)
+	environmentMappingShader = LoadShader("EnvironmentMapping.fx");
+	if (!environmentMappingShader)
 	{
 		return false;
 	}
 
 	// 모델 로딩
-	sphere = LoadModel("SphereWithTangent.x");
-	if (!sphere)
+	teapot = LoadModel("TeapotWithTangent.x");
+	if (!teapot)
 	{
 		return false;
 	}
+
 	return true;
 }
 
@@ -421,34 +428,39 @@ void Cleanup()
 	}
 
 	// 모델을 release 한다.
-	if (sphere)
+	if (teapot)
 	{
-		sphere->Release();
-		sphere = NULL;
+		teapot->Release();
+		teapot = NULL;
 	}
 
 	// 쉐이더를 release 한다.
-	if (normalMappingShader)
+	if (environmentMappingShader)
 	{
-		normalMappingShader->Release();
-		normalMappingShader = NULL;
+		environmentMappingShader->Release();
+		environmentMappingShader = NULL;
 	}
 
 	// 텍스처를 release 한다.
-	if (stoneSM)
-	{
-		stoneSM->Release();
-		stoneSM = NULL;
-	}
 	if (stoneDM)
 	{
 		stoneDM->Release();
 		stoneDM = NULL;
 	}
+	if (stoneSM)
+	{
+		stoneSM->Release();
+		stoneSM = NULL;
+	}
 	if (stoneNM)
 	{
 		stoneNM->Release();
 		stoneNM = NULL;
+	}
+	if (snowENV)
+	{
+		snowENV->Release();
+		snowENV = NULL;
 	}
 
 	// D3D를 release 한다.
