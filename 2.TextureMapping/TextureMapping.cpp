@@ -4,7 +4,7 @@
 //
 //**********************************************************************
 
-#include "ShaderFramework.h"
+#include "TextureMapping.h"
 #include <stdio.h>
 
 // 전역변수
@@ -28,21 +28,13 @@ ID3DXFont*              gpFont = NULL;
 LPD3DXMESH				sphere = NULL;
 
 // 쉐이더
-LPD3DXEFFECT			lightingShader = NULL;
+LPD3DXEFFECT			textureMappingShader = NULL;
 
 // 텍스처
+LPDIRECT3DTEXTURE9		earthDM = NULL;
 
 // 프로그램 이름
-const char*				gAppName = "라이팅 프레임워크";
-
-//카메라 위치
-D3DXVECTOR4				worldCameraPosition(0.0f, 0.0f, -200.0f, 1.0f);
-
-//빛의 위치
-D3DXVECTOR4				worldLightPosition(500.0f, 500.0f, -500.0f, 1.0f);
-
-//정반사광 계산시 지수로 사용할 수 
-float					Pow = 20.0f;
+const char*				gAppName = "텍스처 맵핑 프레임워크";
 
 // 진입점
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
@@ -136,11 +128,6 @@ void PlayDemo()
 // 게임로직 업데이트
 void Update()
 {
-	if (GetAsyncKeyState('U') < 0)
-		Pow += 0.1f;
-	if (GetAsyncKeyState('D') < 0)
-		Pow -= 0.1f;
-
 }
 
 //렌더링
@@ -165,7 +152,7 @@ void RenderScene()
 {
 	// 뷰 행렬을 만든다.
 	D3DXMATRIXA16			viewMatrix;
-	D3DXVECTOR3 eye(worldCameraPosition.x, worldCameraPosition.y, worldCameraPosition.z);
+	D3DXVECTOR3 eye(0.0f, 0.0f, -200.0f);
 	D3DXVECTOR3 lookAt(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
 	D3DXMatrixLookAtLH(&viewMatrix, &eye, &lookAt, &up);
@@ -185,28 +172,31 @@ void RenderScene()
 	D3DXMATRIXA16			worldMatrix;
 	D3DXMatrixRotationY(&worldMatrix, rotationY);
 
-	// 쉐이더 전역변수들을 설정
-	lightingShader->SetMatrix("worldMatrix", &worldMatrix);
-	lightingShader->SetMatrix("viewMatrix", &viewMatrix);
-	lightingShader->SetMatrix("projectionMatrix", &projectionMatrix);
+	//월드-뷰-투영행렬을 만든다.
+	D3DXMATRIXA16 worldViewMatrix;
+	D3DXMatrixMultiply(&worldViewMatrix, &worldMatrix, &viewMatrix);
+	D3DXMATRIXA16 worldViewProjectionMatrix;
+	D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
 
-	lightingShader->SetVector("worldCameraPosition", &worldCameraPosition);
-	lightingShader->SetVector("worldLightPosition", &worldLightPosition);
-	lightingShader->SetFloat("Pow", Pow);
+	// 쉐이더 전역변수들을 설정
+	textureMappingShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
+
+	//셰이더 전역 변수들을 설정한다.
+	textureMappingShader->SetTexture("diffuseSampler_Tex", earthDM);
 
 	UINT numPasses = 0;
-	lightingShader->Begin(&numPasses, NULL);
+	textureMappingShader->Begin(&numPasses, NULL);
 	{
 		for (UINT i = 0; i < numPasses; i++)
 		{
-			lightingShader->BeginPass(i);
+			textureMappingShader->BeginPass(i);
 			{
 				sphere->DrawSubset(0);
 			}
-			lightingShader->EndPass();
+			textureMappingShader->EndPass();
 		}
 	}
-	lightingShader->End();
+	textureMappingShader->End();
 }
 
 // 디버그 정보 등을 출력.
@@ -222,12 +212,8 @@ void RenderInfo()
 	rct.top = 5;
 	rct.bottom = WIN_HEIGHT / 3;
 
-	//출력할 텍스트
-	char string[100];
-	sprintf(string, "데모 프레임워크\n\nESC: 데모종료\n\nPow : %f", Pow);
-
 	// 키 입력 정보를 출력
-	gpFont->DrawText(NULL, string, -1, &rct, 0, fontColor);
+	gpFont->DrawText(NULL, "데모 프레임워크\n\nESC: 데모종료", -1, &rct, 0, fontColor);
 }
 
 //초기화 코드
@@ -299,10 +285,15 @@ bool InitD3D(HWND hWnd)
 bool LoadAssets()
 {
 	// 텍스처 로딩
+	earthDM = LoadTexture("Earth.jpg");
+	if (!earthDM)
+	{
+		return false;
+	}
 
 	// 쉐이더 로딩
-	lightingShader = LoadShader("Lighting.fx");
-	if (!lightingShader)
+	textureMappingShader = LoadShader("TextureMapping.fx");
+	if (!textureMappingShader)
 	{
 		return false;
 	}
@@ -396,14 +387,18 @@ void Cleanup()
 	}
 
 	// 쉐이더를 release 한다.
-	if (lightingShader)
+	if (textureMappingShader)
 	{
-		lightingShader->Release();
-		lightingShader = NULL;
+		textureMappingShader->Release();
+		textureMappingShader = NULL;
 	}
 
 	// 텍스처를 release 한다.
-
+	if (earthDM)
+	{
+		earthDM->Release();
+		earthDM = NULL;
+	}
 	// D3D를 release 한다.
 	if (gpD3DDevice)
 	{

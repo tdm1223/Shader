@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string SpecularMapping_Pass_0_Model : ModelData = "..\\Lighting\\sphere.x";
+string SpecularMapping_Pass_0_Model : ModelData = ".\\sphere.x";
 
 struct VS_INPUT
 {
@@ -88,6 +88,23 @@ struct PS_INPUT
    float3 reflection: TEXCOORD3;
 };
 
+texture diffuseMap_Tex
+<
+   string ResourceName = ".\\Fieldstone_DM.tga";
+>;
+sampler2D diffuseSampler = sampler_state
+{
+   Texture = (diffuseMap_Tex);
+};
+texture specularMap_Tex
+<
+   string ResourceName = ".\\Fieldstone_SM.tga";
+>;
+sampler2D specularSampler = sampler_state
+{
+   Texture = (specularMap_Tex);
+};
+
 float power
 <
    string UIName = "power";
@@ -96,23 +113,6 @@ float power
    float UIMin = -1.00;
    float UIMax = 1.00;
 > = float( 20.00 );
-
-texture diffuseMap_Tex
-<
-   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\Fieldstone.tga";
->;
-sampler2D diffuseSampler = sampler_state
-{
-   Texture = (diffuseMap_Tex);
-};
-texture specularMap_Tex
-<
-   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\fieldstone_SM.tga";
->;
-sampler2D specularSampler = sampler_state
-{
-   Texture = (specularMap_Tex);
-};
 
 float3 lightColor
 <
@@ -125,7 +125,7 @@ float3 lightColor
 
 float4 SpecularMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {
-   float4 albedo = tex2D(diffuseSampler,input.uv); //èˆõ ØÁ
+   float4 albedo = tex2D(diffuseSampler,input.uv);
    float3 diffuse = lightColor * albedo.rgb * saturate(input.diffuse);
    
    float3 reflection = normalize(input.reflection);
@@ -136,12 +136,12 @@ float4 SpecularMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
       specular = saturate(dot(reflection,-viewDir));
       specular = pow(specular,power);
       
-      float4 specularIntensity = tex2D(specularSampler,input.uv); // ¤˜Xìõ ØÁ
-      specular = lightColor * specularIntensity.rgb * specular;
-   
+      float4 specularIntensity = tex2D(specularSampler,input.uv);
+      specular *= specularIntensity.rgb * lightColor;
    }
+  
    
-   float3 ambient = float3(0.1f,0.1f,0.1f) * albedo;
+   float3 ambient = float3(0.1f,0.1f,0.1f);
 
    return float4(ambient+diffuse+specular,1);
 }

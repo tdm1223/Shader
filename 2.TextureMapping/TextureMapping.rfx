@@ -983,54 +983,48 @@ Pass 0]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
     <RmRegistryBranch NAME="WORKSPACE" API="" XML_VERSION="RenderMonkey 1.71">
      <RmStringVariable NAME="LAST_SAVE" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-5/8/2018 16:44:47]]></RmTextDataBlock></RmStringVariable>
+17/8/2018 11:27:35]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey Version 1.82 (build 322)]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="XML_VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey 1.71]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="BASE_WORKSPACE_PATH" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-C:\Users\SGerm\Desktop\Shader\RenderMonkey\]]></RmTextDataBlock></RmStringVariable>
+C:\Users\SGerm\Desktop\Shader\2.TextureMapping\]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
    </RmRegistryBranch>
   </RmRegistryBranch>
   <RmDirectXEffect NAME="TextureMapping" API="D3D" ACTIVE_CAMERA="">
-   <RmMatrixVariable NAME="worldMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="World" VALUE_0="1.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="1.000000" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.000000" VALUE_11="0.000000" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
-   <RmMatrixVariable NAME="viewMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="View" VALUE_0="0.903246" VALUE_1="-0.136474" VALUE_2="-0.406843" VALUE_3="-0.000005" VALUE_4="0.128507" VALUE_5="0.990595" VALUE_6="-0.046989" VALUE_7="0.000029" VALUE_8="0.409430" VALUE_9="-0.009839" VALUE_10="0.912289" VALUE_11="199.999725" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
-   <RmMatrixVariable NAME="projectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="Projection" VALUE_0="2.245950" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="-1.001001" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="0.000000"/>
-   <Rm2DTextureVariable NAME="DiffuseMap" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" FILE_NAME="..\..\..\..\..\Program Files (x86)\AMD\RenderMonkey 1.82\Examples\Media\Textures\Earth.jpg" ORIGIN="0"/>
+   <RmMatrixVariable NAME="worldViewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="WorldViewProjection" VALUE_0="2.245950" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="199.199203" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="200.000000"/>
+   <Rm2DTextureVariable NAME="diffuseSampler" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" FILE_NAME="..\..\..\..\..\Program Files (x86)\AMD\RenderMonkey 1.82\Examples\Media\Textures\Earth.jpg" ORIGIN="0"/>
    <RmStreamMap NAME="Stream Mapping" API="">
     <RmStream NAME="Stream" API="" STRIDE="20">
      <RmStreamChannel NAME="Position_0" API="" DATA_SIZE="12" DATA_TYPE="2" REGISTER="0" USAGE="0" USAGE_INDEX="0" ATTRIBUTE_NAME="rm_Vertex"/>
      <RmStreamChannel NAME="TexCoord_0" API="" DATA_SIZE="8" DATA_TYPE="1" REGISTER="0" USAGE="5" USAGE_INDEX="0" ATTRIBUTE_NAME="rm_BlendWeight"/>
     </RmStream>
    </RmStreamMap>
-   <RmModelData NAME="Model" API="" FILE_NAME="..\TextureMapping\sphere.x" ORIENTATION="0"/>
+   <RmModelData NAME="Model" API="" FILE_NAME="..\..\..\..\..\Program Files (x86)\AMD\RenderMonkey 1.82\Examples\Media\Models\Sphere.x" ORIENTATION="0"/>
    <RmPass NAME="Pass 0" API="D3D" PASS_INDEX="0" ENABLED="TRUE">
     <RmModelReference NAME="Model" API=""/>
     <RmHLSLShader NAME="Vertex Shader" API="D3D" PIXEL_SHADER="FALSE" TARGET="vs_2_0" ENTRY_POINT="vs_main" COMPILER_FLAGS="0"><RmShaderCode TYPE="TEXT"><![CDATA[
-float4x4 worldMatrix;
-float4x4 viewMatrix;
-float4x4 projectionMatrix;
+float4x4 worldViewProjectionMatrix;
 
 struct VS_INPUT 
 {
-   float4 Position : POSITION0;
-   float2 texCoord : TEXCOORD0;
+   float4 position : POSITION0;
+   float2 uv : TEXCOORD0;
 };
 
 struct VS_OUTPUT 
 {
-   float4 Position : POSITION0;
-   float2 texCoord : TEXCOORD0;
+   float4 position : POSITION0;
+   float2 uv : TEXCOORD0;
 };
 
 VS_OUTPUT vs_main( VS_INPUT input )
 {
    VS_OUTPUT output;
-   output.Position=mul(input.Position,worldMatrix);
-   output.Position=mul(output.Position,viewMatrix);
-   output.Position=mul(output.Position,projectionMatrix);
-   output.texCoord=input.texCoord;
+   output.position=mul(input.position,worldViewProjectionMatrix);
+   output.uv=input.uv;
    
    return output;
    
@@ -1039,21 +1033,19 @@ VS_OUTPUT vs_main( VS_INPUT input )
 
 
 ]]></RmShaderCode>
-     <RmShaderConstant NAME="projectionMatrix" API="" REGISTER="8"/>
-     <RmShaderConstant NAME="viewMatrix" API="" REGISTER="4"/>
-     <RmShaderConstant NAME="worldMatrix" API="" REGISTER="0"/>
+     <RmShaderConstant NAME="worldViewProjectionMatrix" API="" REGISTER="0"/>
     </RmHLSLShader>
     <RmHLSLShader NAME="Pixel Shader" API="D3D" PIXEL_SHADER="TRUE" TARGET="ps_2_0" ENTRY_POINT="ps_main" COMPILER_FLAGS="0"><RmShaderCode TYPE="TEXT"><![CDATA[
-sampler2D DiffuseSampler;
+sampler2D diffuseSampler;
 
 struct PS_INPUT
 {
-   float2 texCoord : TEXCOORD0;
+   float2 uv : TEXCOORD0;
 };
 
 float4 ps_main(PS_INPUT input) : COLOR0
 {   
-   float4 albedo = tex2D(DiffuseSampler,input.texCoord);
+   float4 albedo = tex2D(diffuseSampler,input.uv);
    
    return albedo;
 }
@@ -1061,11 +1053,11 @@ float4 ps_main(PS_INPUT input) : COLOR0
 
 
 ]]></RmShaderCode>
-     <RmSampler NAME="DiffuseSampler" API="" REGISTER="0"/>
+     <RmSampler NAME="diffuseSampler" API="" REGISTER="0"/>
     </RmHLSLShader>
     <RmStreamMapReference NAME="Stream Mapping" API=""/>
-    <RmTextureObject NAME="DiffuseSampler" API="D3D" STATE_INDEX="0" VERTEX_TEXTURE="FALSE">
-     <RmTextureReference NAME="DiffuseMap" API=""/>
+    <RmTextureObject NAME="diffuseSampler" API="D3D" STATE_INDEX="0" VERTEX_TEXTURE="FALSE">
+     <RmTextureReference NAME="diffuseSampler" API=""/>
     </RmTextureObject>
    </RmPass>
   </RmDirectXEffect>

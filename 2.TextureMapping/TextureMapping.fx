@@ -22,29 +22,25 @@
 //--------------------------------------------------------------//
 string TextureMapping_Pass_0_Model : ModelData = ".\\sphere.x";
 
-float4x4 worldMatrix : World;
-float4x4 viewMatrix : View;
-float4x4 projectionMatrix : Projection;
+float4x4 worldViewProjectionMatrix : WorldViewProjection;
 
 struct VS_INPUT 
 {
-   float4 Position : POSITION0;
-   float2 texCoord : TEXCOORD0;
+   float4 position : POSITION0;
+   float2 uv : TEXCOORD0;
 };
 
 struct VS_OUTPUT 
 {
-   float4 Position : POSITION0;
-   float2 texCoord : TEXCOORD0;
+   float4 position : POSITION0;
+   float2 uv : TEXCOORD0;
 };
 
 VS_OUTPUT TextureMapping_Pass_0_Vertex_Shader_vs_main( VS_INPUT input )
 {
    VS_OUTPUT output;
-   output.Position=mul(input.Position,worldMatrix);
-   output.Position=mul(output.Position,viewMatrix);
-   output.Position=mul(output.Position,projectionMatrix);
-   output.texCoord=input.texCoord;
+   output.position=mul(input.position,worldViewProjectionMatrix);
+   output.uv=input.uv;
    
    return output;
    
@@ -53,23 +49,23 @@ VS_OUTPUT TextureMapping_Pass_0_Vertex_Shader_vs_main( VS_INPUT input )
 
 
 
-texture DiffuseMap_Tex
+texture diffuseSampler_Tex
 <
    string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\Earth.jpg";
 >;
-sampler2D DiffuseSampler = sampler_state
+sampler2D diffuseSampler = sampler_state
 {
-   Texture = (DiffuseMap_Tex);
+   Texture = (diffuseSampler_Tex);
 };
 
 struct PS_INPUT
 {
-   float2 texCoord : TEXCOORD0;
+   float2 uv : TEXCOORD0;
 };
 
 float4 TextureMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR0
 {   
-   float4 albedo = tex2D(DiffuseSampler,input.texCoord);
+   float4 albedo = tex2D(diffuseSampler,input.uv);
    
    return albedo;
 }
