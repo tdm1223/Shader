@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string SpecularMapping_Pass_0_Model : ModelData = ".\\sphere.x";
+string SpecularMapping_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Sphere.x";
 
 struct VS_INPUT
 {
@@ -72,7 +72,7 @@ VS_OUTPUT SpecularMapping_Pass_0_Vertex_Shader_vs_main(VS_INPUT input)
    float3 worldNormal = mul(input.normal,(float3x3)worldMatrix);
    worldNormal = normalize(worldNormal);
    
-   output.diffuse=dot(-lightDir,worldNormal);
+   output.diffuse = dot(-lightDir,worldNormal);
    output.reflection = reflect(lightDir,worldNormal);
    
    output.uv=input.uv;
@@ -125,7 +125,8 @@ float3 lightColor
 
 float4 SpecularMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {
-   float4 albedo = tex2D(diffuseSampler,input.uv);
+   //œ¬ = [X ÉÁ * œ¬X ‘ * èˆõX 
+   float4 albedo = tex2D(diffuseSampler,input.uv); //èˆõ ØÁ 
    float3 diffuse = lightColor * albedo.rgb * saturate(input.diffuse);
    
    float3 reflection = normalize(input.reflection);
@@ -136,7 +137,8 @@ float4 SpecularMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
       specular = saturate(dot(reflection,-viewDir));
       specular = pow(specular,power);
       
-      float4 specularIntensity = tex2D(specularSampler,input.uv);
+      //¬ = [X ÉÁ * ¬X ‘ * ¤˜XìõX  
+      float4 specularIntensity = tex2D(specularSampler,input.uv); //¤˜Xìõ ØÁ
       specular *= specularIntensity.rgb * lightColor;
    }
   

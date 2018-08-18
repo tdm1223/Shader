@@ -78,12 +78,20 @@ float3 surfaceColor
    float UIMin = -1.00;
    float UIMax = 1.00;
 > = float3( 0.00, 1.00, 0.00 );
+float toonShaderParam
+<
+   string UIName = "toonShaderParam";
+   string UIWidget = "Numeric";
+   bool UIVisible =  false;
+   float UIMin = -1.00;
+   float UIMax = 1.00;
+> = float( 5.00 );
 
 float4 ToonShader_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {   
    float3 diffuse = saturate(input.diffuse);
    
-   diffuse = ceil(diffuse * 5) /5.0f;
+   diffuse = ceil(diffuse * toonShaderParam) /toonShaderParam;
    
    return float4(surfaceColor * diffuse.xyz,1);
    

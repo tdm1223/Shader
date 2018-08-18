@@ -955,7 +955,7 @@
       <RmRegistryBranch NAME="Effect Workspace.SpecularMapping" API="" XML_VERSION="RenderMonkey 1.71">
        <RmRegistryBranch NAME="Disassembly" API="" XML_VERSION="RenderMonkey 1.71"/>
        <RmStringVariable NAME="Editing Shader" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-Pixel Shader]]></RmTextDataBlock></RmStringVariable>
+Vertex Shader]]></RmTextDataBlock></RmStringVariable>
        <RmStringVariable NAME="Editing Pass" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 Pass 0]]></RmTextDataBlock></RmStringVariable>
        <RmIntegerVariable NAME="Y" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="6" MIN="-10" MAX="10" CLAMP="FALSE"/>
@@ -1018,22 +1018,22 @@ Pass 0]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
     <RmRegistryBranch NAME="WORKSPACE" API="" XML_VERSION="RenderMonkey 1.71">
      <RmStringVariable NAME="LAST_SAVE" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-17/8/2018 11:30:27]]></RmTextDataBlock></RmStringVariable>
+18/8/2018 11:36:26]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey Version 1.82 (build 322)]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="XML_VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey 1.71]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="BASE_WORKSPACE_PATH" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-C:\Users\SGerm\Desktop\Shader\SpecularMapping\]]></RmTextDataBlock></RmStringVariable>
+C:\Users\SGerm\Desktop\Shader\4.SpecularMapping\]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
    </RmRegistryBranch>
   </RmRegistryBranch>
   <RmDirectXEffect NAME="SpecularMapping" API="D3D" ACTIVE_CAMERA="">
    <RmMatrixVariable NAME="worldMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="World" VALUE_0="1.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="1.000000" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.000000" VALUE_11="0.000000" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
-   <RmMatrixVariable NAME="viewMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="View" VALUE_0="0.956217" VALUE_1="-0.037357" VALUE_2="-0.290266" VALUE_3="-0.000003" VALUE_4="0.094563" VALUE_5="0.978056" VALUE_6="0.185644" VALUE_7="0.000080" VALUE_8="0.276962" VALUE_9="-0.204964" VALUE_10="0.938766" VALUE_11="200.000046" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
+   <RmMatrixVariable NAME="viewMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="View" VALUE_0="0.957716" VALUE_1="0.101660" VALUE_2="0.269158" VALUE_3="0.000001" VALUE_4="-0.122609" VALUE_5="0.990507" VALUE_6="0.062157" VALUE_7="0.000138" VALUE_8="-0.260284" VALUE_9="-0.092529" VALUE_10="0.961088" VALUE_11="199.999405" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
    <RmMatrixVariable NAME="projectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="Projection" VALUE_0="2.074080" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="-1.001001" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="0.000000"/>
    <RmVectorVariable NAME="worldLightPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="500.000000" VALUE_1="500.000000" VALUE_2="-500.000000" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
-   <RmVectorVariable NAME="worldCameraPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewPosition" VALUE_0="-55.392349" VALUE_1="40.992882" VALUE_2="-187.753265" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
+   <RmVectorVariable NAME="worldCameraPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewPosition" VALUE_0="52.056694" VALUE_1="18.505796" VALUE_2="-192.217041" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
    <RmFloatVariable NAME="power" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="20.000000" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
    <RmDynamicVariable NAME="lightColor" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VARIABLE_TYPE="FLOAT" ROWS="3" COLUMNS="1" FIXED_SIZE="TRUE" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE" NORMALIZE="FALSE">
     <RmDynamicVariableValueContainer>
@@ -1051,7 +1051,7 @@ C:\Users\SGerm\Desktop\Shader\SpecularMapping\]]></RmTextDataBlock></RmStringVar
      <RmStreamChannel NAME="TexCoord_0" API="" DATA_SIZE="8" DATA_TYPE="1" REGISTER="0" USAGE="5" USAGE_INDEX="0" ATTRIBUTE_NAME="rm_Color"/>
     </RmStream>
    </RmStreamMap>
-   <RmModelData NAME="Model" API="" FILE_NAME="..\SpecularMapping\sphere.x" ORIENTATION="0"/>
+   <RmModelData NAME="Model" API="" FILE_NAME="..\..\..\..\..\Program Files (x86)\AMD\RenderMonkey 1.82\Examples\Media\Models\Sphere.x" ORIENTATION="0"/>
    <RmPass NAME="Pass 0" API="D3D" PASS_INDEX="0" ENABLED="TRUE">
     <RmModelReference NAME="Model" API=""/>
     <RmHLSLShader NAME="Vertex Shader" API="D3D" PIXEL_SHADER="FALSE" TARGET="vs_2_0" ENTRY_POINT="vs_main" COMPILER_FLAGS="0"><RmShaderCode TYPE="TEXT"><![CDATA[
@@ -1097,7 +1097,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
    float3 worldNormal = mul(input.normal,(float3x3)worldMatrix);
    worldNormal = normalize(worldNormal);
    
-   output.diffuse=dot(-lightDir,worldNormal);
+   output.diffuse = dot(-lightDir,worldNormal);
    output.reflection = reflect(lightDir,worldNormal);
    
    output.uv=input.uv;
@@ -1129,7 +1129,8 @@ float3 lightColor;
 
 float4 ps_main(PS_INPUT input) : COLOR
 {
-   float4 albedo = tex2D(diffuseSampler,input.uv);
+   //난반사광 = 빛의 색상 * 난반사광의 양 * 디퓨즈맵의 값
+   float4 albedo = tex2D(diffuseSampler,input.uv); //디퓨즈맵 샘플링 
    float3 diffuse = lightColor * albedo.rgb * saturate(input.diffuse);
    
    float3 reflection = normalize(input.reflection);
@@ -1140,7 +1141,8 @@ float4 ps_main(PS_INPUT input) : COLOR
       specular = saturate(dot(reflection,-viewDir));
       specular = pow(specular,power);
       
-      float4 specularIntensity = tex2D(specularSampler,input.uv);
+      //정반사광 = 빛의 색상 * 정반사광의 양 * 스페큘러맵의 값 
+      float4 specularIntensity = tex2D(specularSampler,input.uv); //스페큘러맵 샘플링
       specular *= specularIntensity.rgb * lightColor;
    }
   

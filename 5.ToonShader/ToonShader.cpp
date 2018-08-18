@@ -1,10 +1,10 @@
 //**********************************************************************
 //
-// ShaderFramework.cpp
+// ToonShader.cpp
 //
 //**********************************************************************
 
-#include "ShaderFramework.h"
+#include "ToonShader.h"
 #include <stdio.h>
 
 // 전역변수
@@ -18,11 +18,11 @@
 float					rotationY = 0.0f;
 
 // D3D 관련
-LPDIRECT3D9             gpD3D = NULL;				// D3D
-LPDIRECT3DDEVICE9       gpD3DDevice = NULL;				// D3D 장치
+LPDIRECT3D9             d3d = NULL;				// D3D
+LPDIRECT3DDEVICE9       d3dDevice = NULL;				// D3D 장치
 			
 //폰트
-ID3DXFont*              gpFont = NULL;
+ID3DXFont*              font = NULL;
 
 // 모델
 LPD3DXMESH				teapot = NULL;
@@ -31,7 +31,7 @@ LPD3DXMESH				teapot = NULL;
 LPD3DXEFFECT			toonShader = NULL;
 
 // 프로그램 이름
-const char*				gAppName = "툰 셰이더 프레임워크";
+const char*				appName = "툰 셰이더 프레임워크";
 
 //빛의 위치
 D3DXVECTOR4				worldLightPosition = D3DXVECTOR4(500.0f, 500.0f, -500.0f, 1.0f);
@@ -39,19 +39,20 @@ D3DXVECTOR4				worldLightPosition = D3DXVECTOR4(500.0f, 500.0f, -500.0f, 1.0f);
 //표면의 색상
 D3DXVECTOR4				surfaceColor = D3DXVECTOR4(0, 1, 0, 1);
 
+//툰셰이더 변수
+float					toonShaderParam = 5.0f;
+
 // 진입점
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
 	// 윈도우 클래스를 등록한다.
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
-		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-		gAppName, NULL };
+		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,appName, NULL };
 	RegisterClassEx(&wc);
 
 	// 프로그램 창을 생성한다.
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	HWND hWnd = CreateWindow(gAppName, gAppName,
-		style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
+	HWND hWnd = CreateWindow(appName, appName,style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	// Client Rect 크기가 WIN_WIDTH, WIN_HEIGHT와 같도록 크기를 조정한다.
@@ -87,7 +88,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		}
 	}
 
-	UnregisterClass(gAppName, wc.hInstance);
+	UnregisterClass(appName, wc.hInstance);
 	return 0;
 }
 
@@ -114,7 +115,14 @@ void ProcessInput(HWND hWnd, WPARAM keyPress)
 {
 	switch (keyPress)
 	{
-		// ESC 키가 눌리면 프로그램을 종료한다.
+	// A와 D로 툰셰이더 변수를 조절한다.
+	case 'A':
+		toonShaderParam -= 0.1f;
+		break;
+	case 'D':
+		toonShaderParam += 0.1f;
+		break;
+	// ESC 키가 눌리면 프로그램을 종료한다.
 	case VK_ESCAPE:
 		PostMessage(hWnd, WM_DESTROY, 0L, 0L);
 		break;
@@ -138,16 +146,16 @@ void RenderFrame()
 {
 	D3DCOLOR bgColour = 0xFF0000FF;	// 배경색상 - 파랑
 
-	gpD3DDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
+	d3dDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
 
-	gpD3DDevice->BeginScene();
+	d3dDevice->BeginScene();
 	{
 		RenderScene();				// 3D 물체등을 그린다.
 		RenderInfo();				// 디버그 정보 등을 출력한다.
 	}
-	gpD3DDevice->EndScene();
+	d3dDevice->EndScene();
 
-	gpD3DDevice->Present(NULL, NULL, NULL, NULL);
+	d3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
 // 3D 물체등을 그린다.
@@ -178,13 +186,6 @@ void RenderScene()
 	D3DXMATRIXA16 inverseWorldMatrix;
 	D3DXMatrixTranspose(&inverseWorldMatrix, &worldMatrix);
 
-	// 프레임마다 0.4도씩 회전을 시킨다.
-	rotationY -= 0.4f * PI / 180.0f;
-	if (rotationY > 2 * PI)
-	{
-		rotationY -= 2 * PI;
-	}
-
 	// 쉐이더 전역변수(매트릭스)들을 설정
 	toonShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
 	toonShader->SetMatrix("inverseWorldMatrix", &inverseWorldMatrix);
@@ -193,17 +194,17 @@ void RenderScene()
 	toonShader->SetVector("worldLightPosition", &worldLightPosition);
 	toonShader->SetVector("surfaceColor", &surfaceColor);
 
+	toonShader->SetFloat("toonShaderParam", toonShaderParam);
+
 	UINT numPasses = 0;
 	toonShader->Begin(&numPasses, NULL);
+	for (UINT i = 0; i < numPasses; i++)
 	{
-		for (UINT i = 0; i < numPasses; i++)
+		toonShader->BeginPass(i);
 		{
-			toonShader->BeginPass(i);
-			{
-				teapot->DrawSubset(0);
-			}
-			toonShader->EndPass();
+			teapot->DrawSubset(0);
 		}
+		toonShader->EndPass();
 	}
 	toonShader->End();
 }
@@ -215,14 +216,16 @@ void RenderInfo()
 	D3DCOLOR fontColor = D3DCOLOR_ARGB(255, 255, 255, 255);
 
 	// 텍스트를 출력할 위치
-	RECT rct;
-	rct.left = 5;
-	rct.right = WIN_WIDTH / 3;
-	rct.top = 5;
-	rct.bottom = WIN_HEIGHT / 3;
+	RECT rect;
+	rect.left = 5;
+	rect.right = WIN_WIDTH;
+	rect.top = 5;
+	rect.bottom = WIN_HEIGHT;
 
+	char string[100];
+	sprintf_s(string, "ESC: 데모종료\nToonShaderParam : %.1f (A,D로 Toon Shader 조절)", toonShaderParam);
 	// 키 입력 정보를 출력
-	gpFont->DrawText(NULL, "데모 프레임워크\n\nESC: 데모종료", -1, &rct, 0, fontColor);
+	font->DrawText(NULL, string, -1, &rect, 0, fontColor);
 }
 
 //초기화 코드
@@ -241,9 +244,9 @@ bool InitEverything(HWND hWnd)
 	}
 
 	// 폰트를 로딩
-	if (FAILED(D3DXCreateFont(gpD3DDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+	if (FAILED(D3DXCreateFont(d3dDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),
-		"Arial", &gpFont)))
+		"Arial", &font)))
 	{
 		return false;
 	}
@@ -255,8 +258,8 @@ bool InitEverything(HWND hWnd)
 bool InitD3D(HWND hWnd)
 {
 	// D3D 객체
-	gpD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!gpD3D)
+	d3d = Direct3DCreate9(D3D_SDK_VERSION);
+	if (!d3d)
 	{
 		return false;
 	}
@@ -281,9 +284,9 @@ bool InitD3D(HWND hWnd)
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 
 	// D3D장치를 생성한다.
-	if (FAILED(gpD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+	if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
 		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &gpD3DDevice)))
+		&d3dpp, &d3dDevice)))
 	{
 		return false;
 	}
@@ -321,7 +324,7 @@ LPD3DXEFFECT LoadShader(const char * filename)
 	dwShaderFlags |= D3DXSHADER_DEBUG;
 #endif
 
-	D3DXCreateEffectFromFile(gpD3DDevice, filename,
+	D3DXCreateEffectFromFile(d3dDevice, filename,
 		NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
 	// 쉐이더 로딩에 실패한 경우 output창에 쉐이더
@@ -347,7 +350,7 @@ LPD3DXEFFECT LoadShader(const char * filename)
 LPD3DXMESH LoadModel(const char * filename)
 {
 	LPD3DXMESH ret = NULL;
-	if (FAILED(D3DXLoadMeshFromX(filename, D3DXMESH_SYSTEMMEM, gpD3DDevice, NULL, NULL, NULL, NULL, &ret)))
+	if (FAILED(D3DXLoadMeshFromX(filename, D3DXMESH_SYSTEMMEM, d3dDevice, NULL, NULL, NULL, NULL, &ret)))
 	{
 		OutputDebugString("모델 로딩 실패: ");
 		OutputDebugString(filename);
@@ -361,10 +364,10 @@ LPD3DXMESH LoadModel(const char * filename)
 void Cleanup()
 {
 	// 폰트를 release 한다.
-	if (gpFont)
+	if (font)
 	{
-		gpFont->Release();
-		gpFont = NULL;
+		font->Release();
+		font = NULL;
 	}
 
 	// 모델을 release 한다.
@@ -382,16 +385,16 @@ void Cleanup()
 	}
 
 	// D3D를 release 한다.
-	if (gpD3DDevice)
+	if (d3dDevice)
 	{
-		gpD3DDevice->Release();
-		gpD3DDevice = NULL;
+		d3dDevice->Release();
+		d3dDevice = NULL;
 	}
 
-	if (gpD3D)
+	if (d3d)
 	{
-		gpD3D->Release();
-		gpD3D = NULL;
+		d3d->Release();
+		d3d = NULL;
 	}
 }
 
