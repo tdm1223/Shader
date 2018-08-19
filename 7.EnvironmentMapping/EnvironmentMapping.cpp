@@ -1,10 +1,10 @@
 //**********************************************************************
 //
-// ShaderFramework.cpp
+// EnvironmentMapping.cpp
 //
 //**********************************************************************
 
-#include "ShaderFramework.h"
+#include "EnvironmentMapping.h"
 #include <stdio.h>
 
 // 전역변수
@@ -143,10 +143,10 @@ void PlayDemo()
 // 게임로직 업데이트
 void Update()
 {
-	if (GetAsyncKeyState('U') < 0)
-		Pow += 0.1f;
-	if (GetAsyncKeyState('D') < 0)
-		Pow -= 0.1f;
+	if (GetAsyncKeyState('W') < 0)
+		worldCameraPosition.z += 1.0f;
+	if (GetAsyncKeyState('S') < 0)
+		worldCameraPosition.z -= 1.0f;
 
 }
 
@@ -242,7 +242,7 @@ void RenderInfo()
 
 	//출력할 텍스트
 	char string[100];
-	sprintf(string, "데모 프레임워크\n\nESC: 데모종료\n\nPow : %f", Pow);
+	sprintf(string, "ESC: 데모종료\nW,S로 카메라 줌");
 
 	// 키 입력 정보를 출력
 	gpFont->DrawText(NULL, string, -1, &rct, 0, fontColor);

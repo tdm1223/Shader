@@ -1,10 +1,10 @@
 //**********************************************************************
 //
-// ShaderFramework.cpp
+// NormalMapping.cpp
 //
 //**********************************************************************
 
-#include "ShaderFramework.h"
+#include "NormalMapping.h"
 #include <stdio.h>
 
 // 전역변수
@@ -142,11 +142,30 @@ void PlayDemo()
 // 게임로직 업데이트
 void Update()
 {
-	if (GetAsyncKeyState('U') < 0)
-		Pow += 0.1f;
+	if (GetAsyncKeyState('A') < 0)
+	{
+		rotationY -= 0.4f * PI / 180.0f;
+		if (rotationY > 2 * PI)
+		{
+			rotationY -= 2 * PI;
+		}
+	}
 	if (GetAsyncKeyState('D') < 0)
-		Pow -= 0.1f;
-
+	{
+		rotationY += 0.4f * PI / 180.0f;
+		if (rotationY > 2 * PI)
+		{
+			rotationY -= 2 * PI;
+		}
+	}
+	if (GetAsyncKeyState('W') < 0)
+	{
+		worldCameraPosition.z += 1.0f;
+	}
+	if (GetAsyncKeyState('S') < 0)
+	{
+		worldCameraPosition.z -= 1.0f;
+	}
 }
 
 //렌더링
@@ -181,13 +200,10 @@ void RenderScene()
 	D3DXMATRIXA16			projectionMatrix;
 	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
-	// 프레임마다 0.4도씩 회전을 시킨다.
-	rotationY -= 0.4f * PI / 180.0f;
-	if (rotationY > 2 * PI)
-	{
-		rotationY -= 2 * PI;
-	}
-
+	D3DXMATRIX cameraRotationMatrix;
+	D3DXVECTOR3 v1(0.0f, 1.0f, 0.0f);
+	D3DXMatrixRotationAxis(&cameraRotationMatrix, &v1, rotationY);
+	
 	// 월드행렬을 만든다.
 	D3DXMATRIXA16			worldMatrix;
 	D3DXMatrixRotationY(&worldMatrix, rotationY);
@@ -241,7 +257,7 @@ void RenderInfo()
 
 	//출력할 텍스트
 	char string[100];
-	sprintf(string, "데모 프레임워크\n\nESC: 데모종료\n\nPow : %f", Pow);
+	sprintf(string, "ESC: 데모종료\nA,D로 물체 회전\nW,S로 카메라 줌");
 
 	// 키 입력 정보를 출력
 	gpFont->DrawText(NULL, string, -1, &rct, 0, fontColor);

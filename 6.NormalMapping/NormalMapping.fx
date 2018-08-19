@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string NormalMapping_Pass_0_Model : ModelData = ".\\SphereWithTangent.x";
+string NormalMapping_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Sphere.x";
 
 float4x4 worldMatrix : World;
 float4x4 worldViewProjectionMatrix : WorldViewProjection;
