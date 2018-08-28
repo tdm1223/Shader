@@ -4,7 +4,7 @@
 //
 //**********************************************************************
 
-#include "ShaderFramework.h"
+#include "UVAnimation.h"
 #include <stdio.h>
 
 // 전역변수
@@ -26,7 +26,7 @@ ID3DXFont*              font1 = NULL;
 ID3DXFont*              font2 = NULL;
 
 // 모델
-LPD3DXMESH				sphere = NULL;
+LPD3DXMESH				disc = NULL;
 
 // 쉐이더
 LPD3DXEFFECT			uvAnimationShader = NULL;
@@ -127,6 +127,37 @@ void ProcessInput(HWND hWnd, WPARAM keyPress)
 {
 	switch (keyPress)
 	{
+	case 'Q':
+		power += 0.1f;
+		break;
+	case 'A':
+		power -= 0.1f;
+		break;
+	case 'W':
+		waveHeight += 0.1f;
+		break;
+	case 'S':
+		waveHeight -= 0.1f;
+		break;
+	case 'E':
+		speed += 0.1f;
+		break;
+	case 'D':
+		speed -= 0.1f;
+		break;
+	case 'R':
+		waveFrequency += 0.1f;
+		break;
+	case 'F':
+		waveFrequency -= 0.1f;
+		break;
+	case 'T':
+		uvSpeed += 0.1f;
+		break;
+	case 'G':
+		uvSpeed -= 0.1f;
+		if (uvSpeed <= 0) uvSpeed = 0;
+		break;
 		// ESC 키가 눌리면 프로그램을 종료한다.
 	case VK_ESCAPE:
 		PostMessage(hWnd, WM_DESTROY, 0L, 0L);
@@ -144,26 +175,7 @@ void PlayDemo()
 // 게임로직 업데이트
 void Update()
 {
-	if (GetAsyncKeyState('Q') < 0)
-		power += 0.1f;
-	if (GetAsyncKeyState('A') < 0)
-		power -= 0.1f;
-	if (GetAsyncKeyState('W') < 0)
-		waveHeight += 0.1f;
-	if (GetAsyncKeyState('S') < 0)
-		waveHeight -= 0.1f;
-	if (GetAsyncKeyState('E') < 0)
-		speed += 0.1f;
-	if (GetAsyncKeyState('D') < 0)
-		speed -= 0.1f;
-	if (GetAsyncKeyState('R') < 0)
-		waveFrequency += 0.1f;
-	if (GetAsyncKeyState('F') < 0)
-		waveFrequency -= 0.1f;
-	if (GetAsyncKeyState('T') < 0)
-		uvSpeed += 0.005f;
-	if (GetAsyncKeyState('G') < 0)
-		uvSpeed -= 0.005f;
+
 }
 
 //렌더링
@@ -230,7 +242,7 @@ void RenderScene()
 		{
 			uvAnimationShader->BeginPass(i);
 			{
-				sphere->DrawSubset(0);
+				disc->DrawSubset(0);
 			}
 			uvAnimationShader->EndPass();
 		}
@@ -258,7 +270,7 @@ void RenderInfo()
 		WaveHeight(W,S) : %.1f\n\n\
 		Speed(E,D) : %.1f\n\n\
 		WaveFrequency(R,F) : %.1f\n\n\
-		UVSpeed : %.1f\n\n\
+		UVSpeed(T,G) : %.1f\n\n\
 		ESC: 종료", 
 		power,waveHeight,speed,waveFrequency,uvSpeed);
 
@@ -353,8 +365,8 @@ bool LoadAssets()
 	}
 
 	// 모델 로딩
-	sphere = LoadModel("disc.x");
-	if (!sphere)
+	disc = LoadModel("disc.x");
+	if (!disc)
 	{
 		return false;
 	}
@@ -438,10 +450,10 @@ void Cleanup()
 		font2 = NULL;
 	}
 	// 모델을 release 한다.
-	if (sphere)
+	if (disc)
 	{
-		sphere->Release();
-		sphere = NULL;
+		disc->Release();
+		disc = NULL;
 	}
 
 	// 쉐이더를 release 한다.
