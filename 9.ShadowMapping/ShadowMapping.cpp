@@ -1,10 +1,10 @@
 //**********************************************************************
 //
-// ShaderFramework.cpp
+// ShadowMapping.cpp
 //
 //**********************************************************************
 
-#include "ShaderFramework.h"
+#include "ShadowMapping.h"
 #include <stdio.h>
 
 // 전역변수
@@ -38,8 +38,8 @@ LPD3DXEFFECT			createShadowShader = NULL;
 const char*				appName = "그림자 매핑 프레임워크";
 
 //카메라 위치
-//D3DXVECTOR4				worldCameraPosition(200.0f, 200.0f, 200.0f, 1.0f);
-D3DXVECTOR4				worldCameraPosition(300.0f, 300.0f,300.0f, 1.0f);
+D3DXVECTOR4				worldCameraPosition(300.0f, 500.0f,300.0f, 1.0f);
+
 //빛의 위치
 D3DXVECTOR4				worldLightPosition(500.0f, 500.0f, -500.0f, 1.0f);
 
@@ -126,6 +126,18 @@ void ProcessInput(HWND hWnd, WPARAM keyPress)
 {
 	switch (keyPress)
 	{
+	case 'W':
+		worldLightPosition.x -= 10.0f;
+		break;
+	case 'S':
+		worldLightPosition.x += 10.0f;
+		break;
+	case 'A':
+		worldLightPosition.z -= 10.0f;
+		break;
+	case 'D':
+		worldLightPosition.z += 10.0f;
+		break;
 		// ESC 키가 눌리면 프로그램을 종료한다.
 	case VK_ESCAPE:
 		PostMessage(hWnd, WM_DESTROY, 0L, 0L);
@@ -148,7 +160,7 @@ void Update()
 //렌더링
 void RenderFrame()
 {
-	D3DCOLOR bgColour = 0xFFFFFFFF;	// 배경색상 - 흰색
+	D3DCOLOR bgColour = 0x00FFFFFF;	// 배경색상 - 흰색
 
 	d3dDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
 
@@ -312,7 +324,7 @@ void RenderScene()
 void RenderInfo()
 {
 	// 텍스트 색상
-	D3DCOLOR fontColor = D3DCOLOR_ARGB(255, 255, 255, 255);
+	D3DCOLOR fontColor = D3DCOLOR_ARGB(0, 0, 0, 255);
 
 	// 텍스트를 출력할 위치
 	RECT rct;

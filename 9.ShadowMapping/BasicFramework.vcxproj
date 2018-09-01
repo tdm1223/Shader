@@ -99,10 +99,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ShaderFramework.cpp" />
+    <ClCompile Include="ShadowMapping.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ShaderFramework.h" />
+    <ClInclude Include="ShadowMapping.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
