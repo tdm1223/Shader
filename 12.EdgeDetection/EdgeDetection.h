@@ -1,6 +1,6 @@
 //**********************************************************************
 //
-// ShaderFramework.h
+// EdgeDetection.h
 //
 //**********************************************************************
 
@@ -18,7 +18,7 @@
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void ProcessInput(HWND hWnd, WPARAM keyPress);
 
-// 초기화 과련
+// 초기화 관련
 bool InitEverything(HWND hWnd);
 bool InitD3D(HWND hWnd);
 bool LoadAssets();
@@ -37,3 +37,6 @@ void RenderInfo();
 
 // 메모리 해제 관련
 void Cleanup();
+
+//화면 크기 사각형을 만드는 함수
+void InitFullScreenQuad();

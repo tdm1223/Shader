@@ -1005,9 +1005,9 @@
       <RmRegistryBranch NAME="Effect Workspace.ShadowMapping" API="" XML_VERSION="RenderMonkey 1.71">
        <RmRegistryBranch NAME="Disassembly" API="" XML_VERSION="RenderMonkey 1.71"/>
        <RmStringVariable NAME="Editing Shader" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-Pixel Shader]]></RmTextDataBlock></RmStringVariable>
+Vertex Shader]]></RmTextDataBlock></RmStringVariable>
        <RmStringVariable NAME="Editing Pass" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-ApplyShadowTorus]]></RmTextDataBlock></RmStringVariable>
+CreateShadow]]></RmTextDataBlock></RmStringVariable>
        <RmIntegerVariable NAME="Y" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="30" MIN="-10" MAX="10" CLAMP="FALSE"/>
        <RmIntegerVariable NAME="Width" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="650" MIN="-10" MAX="10" CLAMP="FALSE"/>
        <RmIntegerVariable NAME="Height" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="650" MIN="-10" MAX="10" CLAMP="FALSE"/>
@@ -1033,13 +1033,13 @@ ApplyShadowTorus]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
     <RmRegistryBranch NAME="WORKSPACE" API="" XML_VERSION="RenderMonkey 1.71">
      <RmStringVariable NAME="LAST_SAVE" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-30/8/2018 23:17:41]]></RmTextDataBlock></RmStringVariable>
+3/9/2018 21:4:2]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey Version 1.82 (build 322)]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="XML_VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey 1.71]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="BASE_WORKSPACE_PATH" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-C:\Users\SGerm\Desktop\Shader\9.ShadowMapping\]]></RmTextDataBlock></RmStringVariable>
+C:\Users\SGerm\Desktop\Shader\9.ShadowMapping - 복사본\]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
    </RmRegistryBranch>
   </RmRegistryBranch>
@@ -1048,7 +1048,7 @@ C:\Users\SGerm\Desktop\Shader\9.ShadowMapping\]]></RmTextDataBlock></RmStringVar
    <RmMatrixVariable NAME="lightViewMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="1.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="1.000000" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.000000" VALUE_11="0.000000" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
    <RmMatrixVariable NAME="lightProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="Projection" VALUE_0="2.303610" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="-1.001001" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="0.000000"/>
    <RmVectorVariable NAME="worldLightPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="500.000000" VALUE_1="500.000000" VALUE_2="-500.000000" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
-   <RmMatrixVariable NAME="viewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewProjection" VALUE_0="2.303610" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="0.000000" VALUE_6="2.414214" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="-1.001001" VALUE_10="0.000000" VALUE_11="337.188721" VALUE_12="0.000000" VALUE_13="-1.000000" VALUE_14="0.000000" VALUE_15="337.851532"/>
+   <RmMatrixVariable NAME="viewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewProjection" VALUE_0="2.303610" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="206.493240" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="207.286743"/>
    <RmRenderableTexture NAME="ShadowMap" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" FILE_NAME="" ORIGIN="0" WIDTH="2048" HEIGHT="2048" FORMAT="114" USE_VIEWPORT_DIMENSIONS="FALSE" GENERATE_MIPMAPS="FALSE" WIDTH_RATIO="1.000000" HEIGHT_RATIO="1.000000"/>
    <RmStreamMap NAME="Stream Mapping" API="">
     <RmStream NAME="Stream" API="" STRIDE="24">
@@ -1083,23 +1083,23 @@ VS_OUTPUT vs_main(VS_INPUT input)
    VS_OUTPUT output;
    
    //조명의 위치로부터 광원-뷰 행렬을 만드는 과정
-   float4x4 lightViewMatrix = lightViewMatrix;
+   float4x4 lightViewMatrixTmp = lightViewMatrix;
 
    float3 dirZ = -normalize(worldLightPosition.xyz);
    float3 up = float3(0,1,0);
    float3 dirX = cross(up, dirZ);
    float3 dirY = cross(dirZ, dirX);
    
-   lightViewMatrix = float4x4(
+   lightViewMatrixTmp = float4x4(
       float4(dirX, -dot(worldLightPosition.xyz, dirX)),
       float4(dirY, -dot(worldLightPosition.xyz, dirY)),
       float4(dirZ, -dot(worldLightPosition.xyz, dirZ)),
       float4(0, 0, 0, 1));
-   lightViewMatrix = transpose(lightViewMatrix);
+   lightViewMatrixTmp = transpose(lightViewMatrixTmp);
    
    //정점을 물체공간 -> 월드공간 -> 광원-뷰 공간 -> 광원-투영 공간으로 변환
    output.position = mul(input.position,worldMatrix);
-   output.position = mul(output.position,lightViewMatrix);
+   output.position = mul(output.position,lightViewMatrixTmp);
    output.position = mul(output.position, lightProjectionMatrix);
    
    output.clipPosition = output.position;

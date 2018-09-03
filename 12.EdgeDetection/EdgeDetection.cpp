@@ -1,12 +1,11 @@
 //**********************************************************************
 //
-// ShaderFramework.cpp
+// EdgeDetection.cpp
 // 
-// Author: Pope Kim
 //
 //**********************************************************************
 
-#include "ShaderFramework.h"
+#include "EdgeDetection.h"
 #include <stdio.h>
 
 #define PI           3.14159265f
@@ -35,6 +34,9 @@ LPD3DXEFFECT			environmentMappingShader = NULL;
 LPD3DXEFFECT			noEffect = NULL;
 LPD3DXEFFECT			grayScale = NULL;
 LPD3DXEFFECT			sepia = NULL;
+LPD3DXEFFECT			edgeDetection = NULL;
+LPD3DXEFFECT			emboss = NULL;
+LPD3DXEFFECT			laplacian = NULL;
 
 // 텍스처
 LPDIRECT3DTEXTURE9		stoneDM = NULL;
@@ -43,7 +45,7 @@ LPDIRECT3DTEXTURE9		stoneNM = NULL;
 LPDIRECT3DCUBETEXTURE9	snowENV = NULL;
 
 // 프로그램 이름
-const char*				appName = "초간단 쉐이더 데모 프레임워크";
+const char*				appName = "EdgeDetection 프레임워크";
 
 // 회전값
 float					rotationY = 0.0f;
@@ -67,10 +69,6 @@ LPDIRECT3DTEXTURE9		sceneRenderTarget = NULL;
 
 // 사용할 포스트프로세스 쉐이더의 색인
 int postProcessIndex = 0;
-
-//-----------------------------------------------------------------------
-// 프로그램 진입점/메시지 루프
-//-----------------------------------------------------------------------
 
 // 진입점
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
@@ -154,14 +152,15 @@ void ProcessInput(HWND hWnd, WPARAM keyPress)
 	case '1':
 	case '2':
 	case '3':
+	case '4':
+	case '5':
+	case '6':
 		postProcessIndex = keyPress - '0' - 1;
 		break;
 	}
 }
 
-//------------------------------------------------------------
 // 게임루프
-//------------------------------------------------------------
 void PlayDemo()
 {
 	Update();
@@ -173,10 +172,7 @@ void Update()
 {
 }
 
-//------------------------------------------------------------
 // 렌더링
-//------------------------------------------------------------
-
 void RenderFrame()
 {
 	D3DCOLOR bgColour = 0x000000FF;	
@@ -288,6 +284,24 @@ void RenderScene()
 	{
 		effectToUse = sepia;
 	}
+	else if (postProcessIndex == 3)
+	{
+		effectToUse = edgeDetection;
+	}
+	else if (postProcessIndex == 4)
+	{
+		effectToUse = emboss;
+	}
+	else if (postProcessIndex == 5)
+	{
+		effectToUse = laplacian;
+	}
+	
+	D3DXVECTOR4 pixelOffset(1 / (float)WIN_WIDTH, 1 / (float)WIN_HEIGHT, 0, 0);
+	if (effectToUse == edgeDetection || effectToUse == emboss || effectToUse == laplacian)
+	{
+		effectToUse->SetVector("pixelOffset", &pixelOffset);
+	}
 
 	effectToUse->SetTexture("SceneTexture_Tex", sceneRenderTarget);
 	effectToUse->Begin(&numPasses, NULL);
@@ -324,12 +338,9 @@ void RenderInfo()
 	rect.bottom = WIN_HEIGHT / 3;
 
 	// 키 입력 정보를 출력
-	font->DrawText(NULL, "데모 프레임워크\n\nESC: 데모종료\n1: 칼라\n2: 흑백\n3: 세피아", -1, &rect, 0, fontColor);
+	font->DrawText(NULL, "데모 프레임워크\n\nESC: 데모종료\n1: 칼라\n2: 흑백\n3: 세피아\n4: 외곽선 찾기\n5: 양각효과\n6: 라플라시안", -1, &rect, 0, fontColor);
 }
 
-//------------------------------------------------------------
-// 초기화 코드
-//------------------------------------------------------------
 bool InitEverything(HWND hWnd)
 {
 	// D3D를 초기화
@@ -458,6 +469,23 @@ bool LoadAssets()
 		return false;
 	}
 
+	edgeDetection = LoadShader("EdgeDetection.fx");
+	if (!edgeDetection)
+	{
+		return false;
+	}
+
+	emboss = LoadShader("Emboss.fx");
+	if (!emboss)
+	{
+		return false;
+	}
+	laplacian = LoadShader("Laplacian.fx");
+	if (!laplacian)
+	{
+		return false;
+	}
+
 	// 모델 로딩
 	teapot = LoadModel("TeapotWithTangent.x");
 	if (!teapot)
@@ -569,6 +597,24 @@ void Cleanup()
 	{
 		sepia->Release();
 		sepia = NULL;
+	}
+
+	if (edgeDetection)
+	{
+		edgeDetection->Release();
+		edgeDetection = NULL;
+	}
+
+	if (emboss)
+	{
+		emboss->Release();
+		emboss = NULL;
+	}
+
+	if (laplacian)
+	{
+		laplacian->Release();
+		laplacian = NULL;
 	}
 
 	// 텍스처를 release 한다.

@@ -1,10 +1,10 @@
 //**********************************************************************
 //
-// ShadowMapping.cpp
+// ShadowSpecularMapping.cpp
 //
 //**********************************************************************
 
-#include "ShadowMapping.h"
+#include "ShadowSpecularMapping.h"
 #include <stdio.h>
 
 // 전역변수
@@ -34,19 +34,23 @@ LPD3DXEFFECT			createShadowShader = NULL;
 LPD3DXEFFECT			applyDisc = NULL;
 
 // 텍스처
+LPDIRECT3DTEXTURE9		stoneDM = NULL;
+LPDIRECT3DTEXTURE9		stoneSM = NULL;
 
 // 프로그램 이름
-const char*				appName = "그림자 매핑 프레임워크";
+const char*				appName = "그림자+법선 매핑";
 
 //카메라 위치
-D3DXVECTOR4				worldCameraPosition(300.0f, 500.0f,300.0f, 1.0f);
+D3DXVECTOR4				worldCameraPosition(200.0f, 200.0f,200.0f, 1.0f);
 
 //빛의 위치
 D3DXVECTOR4				worldLightPosition(500.0f, 500.0f, -500.0f, 1.0f);
 
+//빛의 색상
+D3DXVECTOR4				lightColor(0.7f, 0.7f, 1.0f, 1.0f);
+
 //물체의 색상
-D3DXVECTOR4				torusColor(1.0f, 1.0f, 0.0f, 1.0f);
-D3DXVECTOR4				discColor(1.0f, 0.0f, 1.0f, 1.0f);
+D3DXVECTOR4				discColor(0.0f, 1.0f, 1.0f, 1.0f);
 
 //그림자맵 렌더 타깃
 LPDIRECT3DTEXTURE9		shadowRenderTarget = NULL;
@@ -128,16 +132,16 @@ void ProcessInput(HWND hWnd, WPARAM keyPress)
 	switch (keyPress)
 	{
 	case 'W':
-		worldLightPosition.x -= 10.0f;
+		worldCameraPosition.x -= 10.0f;
 		break;
 	case 'S':
-		worldLightPosition.x += 10.0f;
+		worldCameraPosition.x += 10.0f;
 		break;
 	case 'A':
-		worldLightPosition.z -= 10.0f;
+		worldCameraPosition.z -= 10.0f;
 		break;
 	case 'D':
-		worldLightPosition.z += 10.0f;
+		worldCameraPosition.z += 10.0f;
 		break;
 		// ESC 키가 눌리면 프로그램을 종료한다.
 	case VK_ESCAPE:
@@ -161,7 +165,7 @@ void Update()
 //렌더링
 void RenderFrame()
 {
-	D3DCOLOR bgColour = 0x000000FF;	// 배경색상 - 흰색
+	D3DCOLOR bgColour = 0x000000FF;
 
 	d3dDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
 
@@ -287,15 +291,18 @@ void RenderScene()
 
 #pragma region 그림자 입히기
 	//applyShadowShader 전역 변수들을 설정
+	applyShadowShader->SetVector("lightColor", &lightColor);
+	applyShadowShader->SetVector("worldLightPosition", &worldLightPosition);
+	applyShadowShader->SetVector("worldCameraPosition", &worldCameraPosition);
 	applyShadowShader->SetMatrix("worldMatrix", &torusWorldMatrix);
-	applyShadowShader->SetMatrix("viewProjectionMatrix", &viewProjectionMatrix);
-	
+
 	applyShadowShader->SetMatrix("lightViewMatrix", &lightViewMatrix);
 	applyShadowShader->SetMatrix("lightProjectionMatrix", &lightProjectionMatrix);
-	applyShadowShader->SetVector("worldLightPosition", &worldLightPosition);
-	applyShadowShader->SetVector("objectColor", &torusColor);
+	applyShadowShader->SetMatrix("viewProjectionMatrix", &viewProjectionMatrix);
+	
+	applyShadowShader->SetTexture("diffuseMap_Tex", stoneDM);
+	applyShadowShader->SetTexture("specularMap_Tex", stoneSM);
 	applyShadowShader->SetTexture("ShadowMap_Tex", shadowRenderTarget);
-
 	//applyShadowShader 시작
 	{
 		UINT numPasses = 0;
@@ -339,7 +346,7 @@ void RenderScene()
 void RenderInfo()
 {
 	// 텍스트 색상
-	D3DCOLOR fontColor = D3DCOLOR_ARGB(255, 0, 0, 255);
+	D3DCOLOR fontColor = D3DCOLOR_ARGB(255, 255, 255, 255);
 
 	// 텍스트를 출력할 위치
 	RECT rct;
@@ -350,7 +357,7 @@ void RenderInfo()
 
 	//출력할 텍스트
 	char string[100];
-	sprintf(string, "데모 프레임워크\n\nESC: 데모종료\n\n");
+	sprintf(string, "ESC: 데모종료\n\n");
 
 	// 키 입력 정보를 출력
 	font->DrawText(NULL, string, -1, &rct, 0, fontColor);
@@ -437,7 +444,18 @@ bool InitD3D(HWND hWnd)
 
 bool LoadAssets()
 {
+	// 텍스처 로딩
+	stoneDM = LoadTexture("Fieldstone_DM.tga");
+	if (!stoneDM)
+	{
+		return false;
+	}
 
+	stoneSM = LoadTexture("Fieldstone_SM.tga");
+	if (!stoneSM)
+	{
+		return false;
+	}
 	// 쉐이더 로딩
 	applyShadowShader = LoadShader("ApplyShadow.fx");
 	if (!applyShadowShader)
@@ -580,6 +598,16 @@ void Cleanup()
 	{
 		shadowDepthStencil->Release();
 		shadowDepthStencil = NULL;
+	}
+	if (stoneDM)
+	{
+		stoneDM->Release();
+		stoneDM = NULL;
+	}
+	if (stoneSM)
+	{
+		stoneSM->Release();
+		stoneSM = NULL;
 	}
 
 	// D3D를 release 한다.
