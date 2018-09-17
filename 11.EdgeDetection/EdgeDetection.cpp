@@ -222,11 +222,11 @@ void RenderScene()
 	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
 	// 프레임마다 0.4도씩 회전을 시킨다.
-	rotationY += 0.4f * PI / 180.0f;
-	if (rotationY > 2 * PI)
-	{
-		rotationY -= 2 * PI;
-	}
+	//rotationY += 0.4f * PI / 180.0f;
+	//if (rotationY > 2 * PI)
+	//{
+	//	rotationY -= 2 * PI;
+	//}
 
 	// 월드행렬을 만든다.
 	D3DXMATRIXA16			worldMatrix;
