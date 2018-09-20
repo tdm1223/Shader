@@ -38,7 +38,7 @@ LPDIRECT3DTEXTURE9		stoneDM = NULL;
 LPDIRECT3DTEXTURE9		stoneSM = NULL;
 
 // 프로그램 이름
-const char*				appName = "그림자+법선 매핑";
+const char*				appName = "그림자 매핑";
 
 //카메라 위치
 D3DXVECTOR4				worldCameraPosition(200.0f, 200.0f,200.0f, 1.0f);

@@ -26,13 +26,17 @@ struct VS_INPUT
 {
    float4 position: POSITION;
    float3 normal: NORMAL;
+   float2 uv : TEXCOORD0;
 };
 
 struct VS_OUTPUT 
 {
    float4 position: POSITION;
+   float2 uv : TEXCOORD0;
    float4 clipPosition: TEXCOORD1;
-   float diffuse: TEXCOORD2; //œ¬ °ü
+   float3 diffuse: TEXCOORD2; //œ¬ °ü
+   float3 viewDir : TEXCOORD3;
+   float3 reflection:TEXCOORD4;
 };
 
 float4x4 worldMatrix : World;
@@ -53,6 +57,15 @@ float4 worldLightPosition
    float4 UIMax = float4( 10.00, 10.00, 10.00, 10.00 );
    bool Normalize =  false;
 > = float4( 500.00, 500.00, -500.00, 1.00 );
+float4 worldCameraPosition
+<
+   string UIName = "worldCameraPosition";
+   string UIWidget = "Direction";
+   bool UIVisible =  false;
+   float4 UIMin = float4( -10.00, -10.00, -10.00, -10.00 );
+   float4 UIMax = float4( 10.00, 10.00, 10.00, 10.00 );
+   bool Normalize =  false;
+> = float4( 0.00, 0.00, 0.00, 1.00 );
 
 float4x4 viewProjectionMatrix : ViewProjection;
 
@@ -63,18 +76,25 @@ VS_OUTPUT ApplyShadow_ApplyShadowTorus_Vertex_Shader_vs_main( VS_INPUT input )
    float4x4 lightViewMatrixTmp = lightViewMatrix;
    
    //<´| ø¬0 \ õ ÀX 
-   float4 worldPosition = mul(input.position, worldMatrix);
-   output.position = mul(worldPosition, viewProjectionMatrix);
+   output.position = mul(input.position, worldMatrix);
 
+   float3 lightDir = normalize(output.position.xyz-worldLightPosition.xyz);
+   
+   float3 viewDir = normalize(output.position.xyz-worldCameraPosition.xyz);
+   output.viewDir = viewDir;
+   
    //Jt| lX0 \ õ<\ ÀX 
-   output.clipPosition = mul(worldPosition, lightViewMatrix);
+   output.clipPosition = mul(output.position, lightViewMatrix);
    output.clipPosition = mul(output.clipPosition, lightProjectionMatrix);
+  
+   output.position = mul(output.position, viewProjectionMatrix);
    
-   //œ¬D lX” ü
-   float3 lightDir = normalize(worldPosition.xyz - worldLightPosition.xyz);
-   float3 worldNormal = normalize(mul(input.normal, (float3x3)worldMatrix));
-   output.diffuse = dot(-lightDir, worldNormal);
+   float3 worldNormal = normalize(mul(input.normal,(float3x3)worldMatrix));
    
+   output.diffuse=dot(-lightDir,worldNormal);
+   output.reflection = reflect(lightDir,worldNormal);
+   
+   output.uv=input.uv;
    return output;
 }
 texture ShadowMap_Tex
@@ -85,22 +105,61 @@ sampler2D shadowSampler = sampler_state
 {
    Texture = (ShadowMap_Tex);
 };
-float4 objectColor
+float3 lightColor
 <
-   string UIName = "objectColor";
-   string UIWidget = "Color";
-   bool UIVisible =  true;
-> = float4( 1.00, 1.00, 0.00, 1.00 );
+   string UIName = "lightColor";
+   string UIWidget = "Numeric";
+   bool UIVisible =  false;
+   float UIMin = -1.00;
+   float UIMax = 1.00;
+> = float3( 0.70, 0.70, 1.00 );
 
 struct PS_INPUT
 {
    float4 clipPosition: TEXCOORD1;
-   float diffuse: TEXCOORD2;
+   float2 uv : TEXCOORD0;
+   float3 diffuse : TEXCOORD2;
+   float3 viewDir : TEXCOORD3;
+   float3 reflection : TEXCOORD4;
+};
+
+texture diffuseMap_Tex
+<
+   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\Fieldstone.tga";
+>;
+sampler2D diffuseSampler = sampler_state
+{
+   Texture = (diffuseMap_Tex);
+};
+texture specularMap_Tex
+<
+   string ResourceName = ".\\Fieldstone_SM.tga";
+>;
+sampler2D specularSampler = sampler_state
+{
+   Texture = (specularMap_Tex);
 };
 
 float4 ApplyShadow_ApplyShadowTorus_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {
-   float3 rgb = saturate(input.diffuse) * objectColor;
+   float4 albedo = tex2D(diffuseSampler,input.uv);
+   float3 diffuse = lightColor * albedo.rgb * saturate(input.diffuse);
+   
+   float3 reflection = normalize(input.reflection);
+   float3 viewDir = normalize(input.viewDir);
+   float3 specular = 0;
+   if(diffuse.x)
+   {
+      specular = saturate(dot(reflection,-viewDir));
+      specular = pow(specular,20.0f);
+      
+      float4 specularIntensity = tex2D(specularSampler, input.uv);
+      specular *= specularIntensity.rgb;
+   }
+   
+   float3 ambient = float3(0.1f,0.1f,0.1f) * albedo;
+   
+   float3 rgb = ambient + diffuse + specular;
    
    float currentDepth = input.clipPosition.z / input.clipPosition.w;
    
