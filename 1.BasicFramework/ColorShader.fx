@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string ColorShader_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Sphere.3ds";
+string ColorShader_Pass_0_Model : ModelData = ".\\sphere.x";
 
 float4x4 worldViewProjectionMatrix : WorldViewProjection;
 
@@ -40,6 +40,7 @@ VS_OUTPUT ColorShader_Pass_0_Vertex_Shader_vs_main( VS_INPUT Input )
 {
    VS_OUTPUT Output;
 
+   //world -> view -> projection
    Output.Position = mul( Input.Position, worldViewProjectionMatrix );
    
    return( Output );
@@ -58,8 +59,7 @@ float4 objectColor
 
 float4 ColorShader_Pass_0_Pixel_Shader_ps_main() : COLOR0
 {   
-   return objectColor;
-   
+   return objectColor; 
 }
 
 

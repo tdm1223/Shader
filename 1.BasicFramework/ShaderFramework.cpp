@@ -1,17 +1,7 @@
-//**********************************************************************
-//
-// ShaderFramework.cpp
-//
-//**********************************************************************
+#include"ShaderFramework.h"
+#include<cstdio>
 
-#include "ShaderFramework.h"
-#include <stdio.h>
-
-
-//----------------------------------------------------------------------
 // 전역변수
-//----------------------------------------------------------------------
-
 #define PI				3.14159265f
 #define FOV				(PI/4.0f)
 #define ASPECT_RATIO	(WIN_WIDTH/(float)WIN_HEIGHT)
@@ -21,13 +11,14 @@
 // D3D 관련
 LPDIRECT3D9             d3d = NULL;				// D3D
 LPDIRECT3DDEVICE9       d3dDevice = NULL;				// D3D 장치
-														
-ID3DXFont*              font = NULL;// 폰트
+	
+// 폰트
+ID3DXFont*              font = NULL;
 
 // 모델
 LPD3DXMESH				sphere = NULL;
 
-// 쉐이더
+// 셰이더
 LPD3DXEFFECT			colorShader = NULL;
 
 // 물체 색상
@@ -41,14 +32,12 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
 	// 윈도우 클래스를 등록한다.
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
-		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-		appName, NULL };
+		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,appName, NULL };
 	RegisterClassEx(&wc);
 
 	// 프로그램 창을 생성한다.
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	HWND hWnd = CreateWindow(appName, appName,
-		style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
+	HWND hWnd = CreateWindow(appName, appName,style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	// Client Rect 크기가 WIN_WIDTH, WIN_HEIGHT와 같도록 크기를 조정한다.
@@ -66,7 +55,9 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	// D3D를 비롯한 모든 것을 초기화한다.
 	if (!InitEverything(hWnd))
+	{
 		PostQuitMessage(1);
+	}
 
 	// 메시지 루프
 	MSG msg;
@@ -78,7 +69,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		else // 메시지가 없으면 게임을 업데이트하고 장면을 그린다
+		else // 메시지가 없으면 업데이트하고 장면을 그린다
 		{
 			PlayDemo();
 		}
@@ -131,32 +122,50 @@ void Update()
 	if (GetAsyncKeyState('Q') < 0)
 	{
 		objectColor.x += 0.01f;
-		if (objectColor.x >= 1) objectColor.x = 1.0f;
+		if (objectColor.x >= 1)
+		{
+			objectColor.x = 1.0f;
+		}
 	}
 	if (GetAsyncKeyState('A') < 0)
 	{
 		objectColor.x -= 0.01f;
-		if (objectColor.x <= 0) objectColor.x = 0.0f;
+		if (objectColor.x <= 0)
+		{
+			objectColor.x = 0.0f;
+		}
 	}
 	if (GetAsyncKeyState('W') < 0)
 	{
 		objectColor.y += 0.01f;
-		if (objectColor.y >= 1) objectColor.y = 1.0f;
+		if (objectColor.y >= 1)
+		{
+			objectColor.y = 1.0f;
+		}
 	}
 	if (GetAsyncKeyState('S') < 0)
 	{
 		objectColor.y -= 0.01f;
-		if (objectColor.y <= 0) objectColor.y = 0.0f;
+		if (objectColor.y <= 0)
+		{
+			objectColor.y = 0.0f;
+		}
 	}
 	if (GetAsyncKeyState('E') < 0)
 	{
 		objectColor.z += 0.01f;
-		if (objectColor.z >= 1) objectColor.z = 1.0f;
+		if (objectColor.z >= 1)
+		{
+			objectColor.z = 1.0f;
+		}
 	}
 	if (GetAsyncKeyState('D') < 0)
 	{
 		objectColor.z -= 0.01f;
-		if (objectColor.z <= 0) objectColor.z = 0.0f;
+		if (objectColor.z <= 0)
+		{
+			objectColor.z = 0.0f;
+		}
 	}
 }
 
@@ -169,8 +178,8 @@ void RenderFrame()
 
 	d3dDevice->BeginScene();
 	{
-		RenderScene();				// 3D 물체등을 그린다.
-		RenderInfo();				// 디버그 정보 등을 출력한다.
+		RenderScene();				// 3D 물체를 그린다.
+		RenderInfo();				// 디버그 정보를 출력한다.
 	}
 	d3dDevice->EndScene();
 
@@ -178,26 +187,31 @@ void RenderFrame()
 }
 
 
-// 3D 물체등을 그린다.
+// 3D 물체를 그린다.
 void RenderScene()
 {
+	//월드 행렬
 	D3DXMATRIXA16 worldMatrix;
 	D3DXMatrixIdentity(&worldMatrix);
 
+	//뷰 행렬
 	D3DXMATRIXA16 viewMatrix;
 	D3DXVECTOR3 eye(0.0f, 0.0f, -200.0f);
 	D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
 	D3DXMatrixLookAtLH(&viewMatrix, &eye, &at, &up);
 
+	//투영 행렬
 	D3DXMATRIXA16 projectionMatrix;
 	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
+	//위의 셋을 곱해서 월드-뷰-투영 행렬을 만듦.
 	D3DXMATRIXA16 worldViewMatrix;
 	D3DXMATRIXA16 worldViewProjectionMatrix;
 	D3DXMatrixMultiply(&worldViewMatrix, &worldMatrix, &viewMatrix);
 	D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
 
+	//셰이더의 전역변수 설정
 	colorShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
 	colorShader->SetVector("objectColor", &objectColor);
 
@@ -212,7 +226,7 @@ void RenderScene()
 	colorShader->End();
 }
 
-// 디버그 정보 등을 출력.
+// 디버그 정보를 출력.
 void RenderInfo()
 {
 	// 텍스트 색상
@@ -242,7 +256,7 @@ bool InitEverything(HWND hWnd)
 		return false;
 	}
 
-	// 모델, 쉐이더, 텍스처등을 로딩
+	// 모델, 셰이더, 텍스처등을 로딩
 	if (!LoadAssets())
 	{
 		return false;
@@ -250,8 +264,7 @@ bool InitEverything(HWND hWnd)
 
 	// 폰트를 로딩
 	if (FAILED(D3DXCreateFont(d3dDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),
-		"Arial", &font)))
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),"Arial", &font)))
 	{
 		return false;
 	}
@@ -290,8 +303,7 @@ bool InitD3D(HWND hWnd)
 
 	// D3D장치를 생성한다.
 	if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &d3dDevice)))
+		D3DCREATE_HARDWARE_VERTEXPROCESSING,&d3dpp, &d3dDevice)))
 	{
 		return false;
 	}
@@ -301,9 +313,7 @@ bool InitD3D(HWND hWnd)
 
 bool LoadAssets()
 {
-	// 텍스처 로딩
-
-	// 쉐이더 로딩
+	// 셰이더 로딩
 	colorShader = LoadShader("ColorShader.fx");
 	if (!colorShader)
 	{
@@ -320,11 +330,10 @@ bool LoadAssets()
 	return true;
 }
 
-// 쉐이더 로딩
+// 셰이더 로딩
 LPD3DXEFFECT LoadShader(const char * filename)
 {
 	LPD3DXEFFECT ret = NULL;
-
 	LPD3DXBUFFER pError = NULL;
 	DWORD dwShaderFlags = 0;
 
@@ -332,11 +341,9 @@ LPD3DXEFFECT LoadShader(const char * filename)
 	dwShaderFlags |= D3DXSHADER_DEBUG;
 #endif
 
-	D3DXCreateEffectFromFile(d3dDevice, filename,
-		NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
+	D3DXCreateEffectFromFile(d3dDevice, filename,NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
-	// 쉐이더 로딩에 실패한 경우 output창에 쉐이더
-	// 컴파일 에러를 출력한다.
+	// 셰이더 로딩에 실패한 경우 output창에 셰이더 컴파일 에러를 출력한다.
 	if (!ret && pError)
 	{
 		int size = pError->GetBufferSize();
@@ -398,14 +405,13 @@ void Cleanup()
 		sphere->Release();
 		sphere = NULL;
 	}
-	// 쉐이더를 release 한다.
+
+	// 셰이더를 release 한다.
 	if (colorShader)
 	{
 		colorShader->Release();
 		colorShader = NULL;
 	}
-
-	// 텍스처를 release 한다.
 
 	// D3D를 release 한다.
 	if (d3dDevice)
@@ -413,7 +419,6 @@ void Cleanup()
 		d3dDevice->Release();
 		d3dDevice = NULL;
 	}
-
 	if (d3d)
 	{
 		d3d->Release();
