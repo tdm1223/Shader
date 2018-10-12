@@ -15,12 +15,12 @@
 //**************************************************************//
 
 //--------------------------------------------------------------//
-// SpecularMapping
+// DiffuseMapping
 //--------------------------------------------------------------//
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string SpecularMapping_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Sphere.x";
+string DiffuseMapping_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Sphere.x";
 
 struct VS_INPUT
 {
@@ -52,23 +52,24 @@ float4 worldLightPosition
 > = float4( 500.00, 500.00, -500.00, 1.00 );
 float4 worldCameraPosition : ViewPosition;
 
-VS_OUTPUT SpecularMapping_Pass_0_Vertex_Shader_vs_main(VS_INPUT input)
+VS_OUTPUT DiffuseMapping_Pass_0_Vertex_Shader_vs_main(VS_INPUT input)
 {
    VS_OUTPUT output;
    output.position = mul(input.position,worldMatrix);
    
+
    float3 lightDir = output.position.xyz-worldLightPosition.xyz;
    lightDir = normalize(lightDir);
    
    float3 viewDir = normalize(output.position.xyz-worldCameraPosition.xyz);
    output.viewDir = viewDir;
-
+   
    output.position=mul(output.position,viewProjectionMatrix);
-
+   
    float3 worldNormal = mul(input.normal,(float3x3)worldMatrix);
    worldNormal = normalize(worldNormal);
    
-   output.diffuse = dot(-lightDir,worldNormal);
+   output.diffuse=dot(-lightDir,worldNormal);
    output.reflection = reflect(lightDir,worldNormal);
    
    output.uv=input.uv;
@@ -84,31 +85,16 @@ struct PS_INPUT
    float3 reflection: TEXCOORD3;
 };
 
+float power;
+
 texture diffuseMap_Tex
 <
-   string ResourceName = ".\\Fieldstone_DM.tga";
+   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\Fieldstone.tga";
 >;
 sampler2D diffuseSampler = sampler_state
 {
    Texture = (diffuseMap_Tex);
 };
-texture specularMap_Tex
-<
-   string ResourceName = ".\\Fieldstone_SM.tga";
->;
-sampler2D specularSampler = sampler_state
-{
-   Texture = (specularMap_Tex);
-};
-
-float power
-<
-   string UIName = "power";
-   string UIWidget = "Numeric";
-   bool UIVisible =  false;
-   float UIMin = -1.00;
-   float UIMax = 1.00;
-> = float( 20.00 );
 
 float3 lightColor
 <
@@ -119,39 +105,27 @@ float3 lightColor
    float UIMax = 1.00;
 > = float3( 0.70, 0.70, 1.00 );
 
-float4 SpecularMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
+float4 DiffuseMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {
-   //œ¬ = [X ÉÁ * œ¬X ‘ * èˆõX 
-   float4 albedo = tex2D(diffuseSampler,input.uv); //èˆõ ØÁ 
-   float3 diffuse = lightColor * albedo.rgb * saturate(input.diffuse);
+   float4 albedo = tex2D(diffuseSampler,input.uv);
+   float3 diffuse = lightColor * albedo * saturate(input.diffuse);
    
    float3 reflection = normalize(input.reflection);
    float3 viewDir = normalize(input.viewDir);
-   float3 specular = 0;
-   if(diffuse.x>0)
-   {
-      specular = saturate(dot(reflection,-viewDir));
-      specular = pow(specular,power);
-      
-      //¬ = [X ÉÁ * ¬X ‘ * ¤˜XìõX  
-      float4 specularIntensity = tex2D(specularSampler,input.uv); //¤˜Xìõ ØÁ
-      specular *= specularIntensity.rgb * lightColor;
-   }
-  
    
-   float3 ambient = float3(0.1f,0.1f,0.1f) * albedo;
+   float3 ambient = float3(0.1f,0.1f,0.1f);
 
-   return float4(ambient+diffuse+specular,1);
+   return float4(ambient+diffuse,1);
 }
 //--------------------------------------------------------------//
-// Technique Section for SpecularMapping
+// Technique Section for DiffuseMapping
 //--------------------------------------------------------------//
-technique SpecularMapping
+technique DiffuseMapping
 {
    pass Pass_0
    {
-      VertexShader = compile vs_2_0 SpecularMapping_Pass_0_Vertex_Shader_vs_main();
-      PixelShader = compile ps_2_0 SpecularMapping_Pass_0_Pixel_Shader_ps_main();
+      VertexShader = compile vs_2_0 DiffuseMapping_Pass_0_Vertex_Shader_vs_main();
+      PixelShader = compile ps_2_0 DiffuseMapping_Pass_0_Pixel_Shader_ps_main();
    }
 
 }

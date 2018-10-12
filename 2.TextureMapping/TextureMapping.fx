@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string TextureMapping_Pass_0_Model : ModelData = ".\\sphere.x";
+string TextureMapping_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Sphere.x";
 
 float4x4 worldViewProjectionMatrix : WorldViewProjection;
 
@@ -39,11 +39,11 @@ struct VS_OUTPUT
 VS_OUTPUT TextureMapping_Pass_0_Vertex_Shader_vs_main( VS_INPUT input )
 {
    VS_OUTPUT output;
+   
    output.position=mul(input.position,worldViewProjectionMatrix);
    output.uv=input.uv;
    
-   return output;
-   
+   return output; 
 }
 
 

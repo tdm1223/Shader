@@ -36,7 +36,6 @@ struct VS_OUTPUT
 
 float4x4 worldViewProjectionMatrix : WorldViewProjection;
 float4x4 inverseWorldMatrix : WorldInverse;
-
 float4 worldLightPosition
 <
    string UIName = "worldLightPosition";
@@ -91,7 +90,7 @@ float4 ToonShader_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {   
    float3 diffuse = saturate(input.diffuse);
    
-   diffuse = ceil(diffuse * toonShaderParam) /toonShaderParam;
+   diffuse = ceil(diffuse * toonShaderParam) / toonShaderParam;
    
    return float4(surfaceColor * diffuse.xyz,1);
    

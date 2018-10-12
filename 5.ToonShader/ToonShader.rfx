@@ -1012,7 +1012,7 @@ Pass 0]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
     <RmRegistryBranch NAME="WORKSPACE" API="" XML_VERSION="RenderMonkey 1.71">
      <RmStringVariable NAME="LAST_SAVE" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-18/8/2018 12:35:7]]></RmTextDataBlock></RmStringVariable>
+12/10/2018 17:4:5]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey Version 1.82 (build 322)]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="XML_VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
@@ -1031,7 +1031,7 @@ C:\Users\SGerm\Desktop\Shader\5.ToonShader\]]></RmTextDataBlock></RmStringVariab
      <RmDynamicVariableValue ROW_INDEX="2" COLUMN_INDEX="0" VALUE="0.000000"/>
     </RmDynamicVariableValueContainer>
    </RmDynamicVariable>
-   <RmMatrixVariable NAME="worldViewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="WorldViewProjection" VALUE_0="1.915951" VALUE_1="0.122470" VALUE_2="-0.126404" VALUE_3="0.000002" VALUE_4="-0.160560" VALUE_5="2.406714" VALUE_6="-0.101851" VALUE_7="-0.000090" VALUE_8="0.062872" VALUE_9="0.046427" VALUE_10="0.997945" VALUE_11="199.198975" VALUE_12="0.062809" VALUE_13="0.046380" VALUE_14="0.996947" VALUE_15="199.999786"/>
+   <RmMatrixVariable NAME="worldViewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="WorldViewProjection" VALUE_0="1.924018" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="199.199203" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="200.000000"/>
    <RmMatrixVariable NAME="inverseWorldMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="WorldInverse" VALUE_0="1.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="1.000000" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.000000" VALUE_11="0.000000" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
    <RmFloatVariable NAME="toonShaderParam" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="5.000000" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
    <RmStreamMap NAME="Stream Mapping" API="">
@@ -1058,7 +1058,6 @@ struct VS_OUTPUT
 
 float4x4 worldViewProjectionMatrix;
 float4x4 inverseWorldMatrix;
-
 float4 worldLightPosition;
 
 VS_OUTPUT vs_main( VS_INPUT input )
@@ -1096,7 +1095,7 @@ float4 ps_main(PS_INPUT input) : COLOR
 {   
    float3 diffuse = saturate(input.diffuse);
    
-   diffuse = ceil(diffuse * toonShaderParam) /toonShaderParam;
+   diffuse = ceil(diffuse * toonShaderParam) / toonShaderParam;
    
    return float4(surfaceColor * diffuse.xyz,1);
    

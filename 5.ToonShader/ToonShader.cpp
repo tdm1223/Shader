@@ -1,11 +1,5 @@
-//**********************************************************************
-//
-// ToonShader.cpp
-//
-//**********************************************************************
-
 #include "ToonShader.h"
-#include <stdio.h>
+#include <cstdio>
 
 // 전역변수
 #define PI				3.14159265f
@@ -20,18 +14,18 @@ float					rotationY = 0.0f;
 // D3D 관련
 LPDIRECT3D9             d3d = NULL;				// D3D
 LPDIRECT3DDEVICE9       d3dDevice = NULL;				// D3D 장치
-			
+
 //폰트
 ID3DXFont*              font = NULL;
 
 // 모델
 LPD3DXMESH				teapot = NULL;
 
-// 쉐이더
+// 셰이더
 LPD3DXEFFECT			toonShader = NULL;
 
 // 프로그램 이름
-const char*				appName = "툰 셰이더 프레임워크";
+const char*				appName = "ToonShader Framework";
 
 //빛의 위치
 D3DXVECTOR4				worldLightPosition = D3DXVECTOR4(500.0f, 500.0f, -500.0f, 1.0f);
@@ -52,7 +46,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	// 프로그램 창을 생성한다.
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	HWND hWnd = CreateWindow(appName, appName,style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
+	HWND hWnd = CreateWindow(appName, appName, style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	// Client Rect 크기가 WIN_WIDTH, WIN_HEIGHT와 같도록 크기를 조정한다.
@@ -70,7 +64,9 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	// D3D를 비롯한 모든 것을 초기화한다.
 	if (!InitEverything(hWnd))
+	{
 		PostQuitMessage(1);
+	}
 
 	// 메시지 루프
 	MSG msg;
@@ -115,14 +111,14 @@ void ProcessInput(HWND hWnd, WPARAM keyPress)
 {
 	switch (keyPress)
 	{
-	// A와 D로 툰셰이더 변수를 조절한다.
+		// A와 D로 툰셰이더 변수를 조절한다.
 	case 'A':
 		toonShaderParam -= 0.1f;
 		break;
 	case 'D':
 		toonShaderParam += 0.1f;
 		break;
-	// ESC 키가 눌리면 프로그램을 종료한다.
+		// ESC 키가 눌리면 프로그램을 종료한다.
 	case VK_ESCAPE:
 		PostMessage(hWnd, WM_DESTROY, 0L, 0L);
 		break;
@@ -186,14 +182,13 @@ void RenderScene()
 	D3DXMATRIXA16 inverseWorldMatrix;
 	D3DXMatrixTranspose(&inverseWorldMatrix, &worldMatrix);
 
-	// 쉐이더 전역변수(매트릭스)들을 설정
+	//정점 셰이더 전역변수 설정
 	toonShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
 	toonShader->SetMatrix("inverseWorldMatrix", &inverseWorldMatrix);
-
-	//셰이더 전역 변수(벡터)들을 설정한다.
 	toonShader->SetVector("worldLightPosition", &worldLightPosition);
-	toonShader->SetVector("surfaceColor", &surfaceColor);
 
+	//픽셀 셰이더 전역 변수 설정
+	toonShader->SetVector("surfaceColor", &surfaceColor);
 	toonShader->SetFloat("toonShaderParam", toonShaderParam);
 
 	UINT numPasses = 0;
@@ -237,7 +232,7 @@ bool InitEverything(HWND hWnd)
 		return false;
 	}
 
-	// 모델, 쉐이더, 텍스처등을 로딩
+	// 모델, 셰이더, 텍스처등을 로딩
 	if (!LoadAssets())
 	{
 		return false;
@@ -245,8 +240,7 @@ bool InitEverything(HWND hWnd)
 
 	// 폰트를 로딩
 	if (FAILED(D3DXCreateFont(d3dDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),
-		"Arial", &font)))
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE), "Arial", &font)))
 	{
 		return false;
 	}
@@ -285,8 +279,7 @@ bool InitD3D(HWND hWnd)
 
 	// D3D장치를 생성한다.
 	if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &d3dDevice)))
+		D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3dDevice)))
 	{
 		return false;
 	}
@@ -296,7 +289,7 @@ bool InitD3D(HWND hWnd)
 
 bool LoadAssets()
 {
-	// 쉐이더 로딩
+	// 셰이더 로딩
 	toonShader = LoadShader("ToonShader.fx");
 	if (!toonShader)
 	{
@@ -312,7 +305,7 @@ bool LoadAssets()
 	return true;
 }
 
-// 쉐이더 로딩
+// 셰이더 로딩
 LPD3DXEFFECT LoadShader(const char * filename)
 {
 	LPD3DXEFFECT ret = NULL;
@@ -324,11 +317,9 @@ LPD3DXEFFECT LoadShader(const char * filename)
 	dwShaderFlags |= D3DXSHADER_DEBUG;
 #endif
 
-	D3DXCreateEffectFromFile(d3dDevice, filename,
-		NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
+	D3DXCreateEffectFromFile(d3dDevice, filename, NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
-	// 쉐이더 로딩에 실패한 경우 output창에 쉐이더
-	// 컴파일 에러를 출력한다.
+	// 셰이더 로딩에 실패한 경우 output창에 셰이더 컴파일 에러를 출력한다.
 	if (!ret && pError)
 	{
 		int size = pError->GetBufferSize();
@@ -377,7 +368,7 @@ void Cleanup()
 		teapot = NULL;
 	}
 
-	// 쉐이더를 release 한다.
+	// 셰이더를 release 한다.
 	if (toonShader)
 	{
 		toonShader->Release();
@@ -390,7 +381,6 @@ void Cleanup()
 		d3dDevice->Release();
 		d3dDevice = NULL;
 	}
-
 	if (d3d)
 	{
 		d3d->Release();

@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string Lighting_Pass_0_Model : ModelData = "..\\DxFramework\\sphere.x";
+string Lighting_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Sphere.x";
 
 struct VS_INPUT
 {
@@ -37,8 +37,7 @@ struct VS_OUTPUT
 };
 
 float4x4 worldMatrix : World;
-float4x4 viewMatrix : View;
-float4x4 projectionMatrix : Projection;
+float4x4 viewProjectionMatrix : ViewProjection;
 
 float4 worldLightPosition
 <
@@ -56,17 +55,14 @@ VS_OUTPUT Lighting_Pass_0_Vertex_Shader_vs_main(VS_INPUT input)
    VS_OUTPUT output;
    output.position = mul(input.position,worldMatrix);
    
-   //ÐX XÐ ¬ XLÀ  D ø´ …¬ ¡0| Ìæ
    float3 lightDir = output.position.xyz-worldLightPosition.xyz;
    lightDir = normalize(lightDir);
    
    float3 viewDir = normalize(output.position.xyz-worldCameraPosition.xyz);
    output.viewDir = viewDir;
    
-   output.position=mul(output.position,viewMatrix);
-   output.position=mul(output.position,projectionMatrix);
+   output.position = mul(output.position,viewProjectionMatrix);
    
-   //• D ÔÜõ<\ ÀXXà ÜT
    float3 worldNormal = mul(input.normal,(float3x3)worldMatrix);
    worldNormal = normalize(worldNormal);
    
@@ -106,7 +102,6 @@ float4 Lighting_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
       specular = pow(specular,Pow);
    }
    
-   //èXŒ Ìà üÀ
    float3 ambient = float3(0.1f,0.1f,0.1f);
 
    return float4(ambient+diffuse+specular,1);
