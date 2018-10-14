@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string UVAnimation_Pass_0_Model : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\Disc.3ds";
+string UVAnimation_Pass_0_Model : ModelData = ".\\disc.x";
 
 struct VS_INPUT
 {
@@ -39,8 +39,7 @@ struct VS_OUTPUT
 };
 
 float4x4 worldMatrix : World;
-float4x4 viewMatrix : View;
-float4x4 projectionMatrix : Projection;
+float4x4 viewProjectionMatrix : ViewProjection;
 
 float4 worldLightPosition
 <
@@ -96,19 +95,12 @@ VS_OUTPUT UVAnimation_Pass_0_Vertex_Shader_vs_main(VS_INPUT input)
    
    output.position = mul(input.position,worldMatrix);
    
-   //ÐX XÐ ¬ XLÀ  D ø´ …¬ ¡0| Ìæ
-   float3 lightDir = output.position.xyz-worldLightPosition.xyz;
-   lightDir = normalize(lightDir);
+   float3 lightDir = normalize(output.position.xyz-worldLightPosition.xyz);
    
-   float3 viewDir = normalize(output.position.xyz-worldCameraPosition.xyz);
-   output.viewDir = viewDir;
+   output.viewDir = normalize(output.position.xyz-worldCameraPosition.xyz); 
+   output.position=mul(output.position,viewProjectionMatrix);
    
-   output.position=mul(output.position,viewMatrix);
-   output.position=mul(output.position,projectionMatrix);
-   
-   //• D ÔÜõ<\ ÀXXà ÜT
-   float3 worldNormal = mul(input.normal,(float3x3)worldMatrix);
-   worldNormal = normalize(worldNormal);
+   float3 worldNormal = normalize(mul(input.normal,(float3x3)worldMatrix));
    
    output.diffuse=dot(-lightDir,worldNormal);
    output.reflection = reflect(lightDir,worldNormal);
@@ -134,7 +126,6 @@ float power
    float UIMin = -1.00;
    float UIMax = 1.00;
 > = float( 20.00 );
-
 texture diffuseMap_Tex
 <
    string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\Fieldstone.tga";
@@ -151,7 +142,6 @@ sampler2D specularSampler = sampler_state
 {
    Texture = (specularMap_Tex);
 };
-
 float3 lightColor
 <
    string UIName = "lightColor";
@@ -163,7 +153,7 @@ float3 lightColor
 
 float4 UVAnimation_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 {
-   float4 albedo = tex2D(diffuseSampler,input.uv); //èˆõ ØÁ
+   float4 albedo = tex2D(diffuseSampler,input.uv); 
    float3 diffuse = lightColor * albedo.rgb * saturate(input.diffuse);
    
    float3 reflection = normalize(input.reflection);
@@ -174,9 +164,8 @@ float4 UVAnimation_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
       specular = saturate(dot(reflection,-viewDir));
       specular = pow(specular,power);
       
-      float4 specularIntensity = tex2D(specularSampler,input.uv); // ¤˜Xìõ ØÁ
-      specular = lightColor * specularIntensity.rgb * specular;
-   
+      float4 specularIntensity = tex2D(specularSampler,input.uv); 
+      specular = lightColor * specularIntensity.rgb * specular;  
    }
    
    float3 ambient = float3(0.1f,0.1f,0.1f) * albedo;

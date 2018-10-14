@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string EnvironmentMapping_Pass_0_Model : ModelData = "..\\DxFramework\\Teapot.x";
+string EnvironmentMapping_Pass_0_Model : ModelData = ".\\TeapotWithTangent.x";
 
 float4x4 worldMatrix : World;
 float4x4 worldViewProjectionMatrix : WorldViewProjection;
@@ -58,28 +58,21 @@ struct VS_OUTPUT
 
 VS_OUTPUT EnvironmentMapping_Pass_0_Vertex_Shader_vs_main( VS_INPUT input )
 {
-   VS_OUTPUT Output;
+   VS_OUTPUT output;
 
-   Output.position = mul( input.position, worldViewProjectionMatrix );
-   Output.uv = input.uv;
+   output.position = mul( input.position, worldViewProjectionMatrix );
+   output.uv = input.uv;
 
    float4 worldPosition = mul( input.position, worldMatrix );
-   float3 lightDir = worldPosition.xyz - worldLightPosition.xyz;
-   Output.lightDir = normalize(lightDir);
    
-   float3 viewDir = normalize(worldPosition.xyz - worldCameraPosition.xyz);
-   Output.viewDir = viewDir;
+   output.lightDir = normalize(worldPosition.xyz - worldLightPosition.xyz);
+   output.viewDir = normalize(worldPosition.xyz - worldCameraPosition.xyz);
    
-   float3 worldNormal = mul( input.normal, (float3x3)worldMatrix );
-   Output.n = normalize(worldNormal);
+   output.t = normalize(mul(input.tangent,(float3x3)worldMatrix)); 
+   output.b = normalize(mul(input.binormal,(float3x3)worldMatrix));
+   output.n = normalize(mul(input.normal,(float3x3)worldMatrix));
    
-   float3 worldTangent = mul(input.tangent, (float3x3)worldMatrix );
-   Output.t = normalize(worldTangent);
-   
-   float3 worldBinormal = mul(input.binormal, (float3x3)worldMatrix );
-   Output.b = normalize(worldBinormal);
-   
-   return Output;
+   return output;
 }
 
 
@@ -107,7 +100,7 @@ sampler2D diffuseSampler = sampler_state
 };
 texture specularMap_Tex
 <
-   string ResourceName = "..\\DxFramework\\Fieldstone_SM.tga";
+   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\fieldstone_SM.tga";
 >;
 sampler2D specularSampler = sampler_state
 {
@@ -137,14 +130,10 @@ float3 lightColor
 > = float3( 0.70, 0.70, 1.00 );
 
 float4 EnvironmentMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
-{
-   float3 tangentNormal = tex2D(normalSampler, input.uv).xyz;
-   tangentNormal = normalize(tangentNormal * 2 - 1);
-   tangentNormal = float3(0,0,1);
-   
+{   
    float3x3 TBN = float3x3(normalize(input.T), normalize(input.B), normalize(input.N));
    TBN = transpose(TBN);
-   float3 worldNormal = mul(TBN, tangentNormal);
+   float3 worldNormal = mul(TBN, float3(0,0,1));
    
    float4 albedo = tex2D(diffuseSampler, input.uv);
    float3 lightDir = normalize(input.lightDir);
@@ -165,8 +154,8 @@ float4 EnvironmentMapping_Pass_0_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
    }
 
    float3 viewReflect = reflect(viewDir,worldNormal);
+   
    float3 environment = texCUBE(environmentSampler,viewReflect).rgb;
-
    float3 ambient = float3(0.1f, 0.1f, 0.1f) * albedo;
    
    return float4(ambient + diffuse + specular + environment * 0.5f, 1);

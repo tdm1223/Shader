@@ -1033,7 +1033,7 @@ Pass 0]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
     <RmRegistryBranch NAME="WORKSPACE" API="" XML_VERSION="RenderMonkey 1.71">
      <RmStringVariable NAME="LAST_SAVE" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-19/8/2018 14:36:52]]></RmTextDataBlock></RmStringVariable>
+14/10/2018 15:43:21]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey Version 1.82 (build 322)]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="XML_VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
@@ -1045,7 +1045,7 @@ C:\Users\SGerm\Desktop\Shader\7.EnvironmentMapping\]]></RmTextDataBlock></RmStri
   </RmRegistryBranch>
   <RmDirectXEffect NAME="EnvironmentMapping" API="D3D" ACTIVE_CAMERA="">
    <RmVectorVariable NAME="worldLightPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="500.000000" VALUE_1="500.000000" VALUE_2="-500.000000" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
-   <RmVectorVariable NAME="worldCameraPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewPosition" VALUE_0="-5.731417" VALUE_1="26.843117" VALUE_2="-128.896225" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
+   <RmVectorVariable NAME="worldCameraPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewPosition" VALUE_0="173.778915" VALUE_1="-38.999416" VALUE_2="90.993462" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
    <RmDynamicVariable NAME="lightColor" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VARIABLE_TYPE="FLOAT" ROWS="3" COLUMNS="1" FIXED_SIZE="TRUE" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE" NORMALIZE="FALSE">
     <RmDynamicVariableValueContainer>
      <RmDynamicVariableValue ROW_INDEX="0" COLUMN_INDEX="0" VALUE="0.700000"/>
@@ -1053,7 +1053,7 @@ C:\Users\SGerm\Desktop\Shader\7.EnvironmentMapping\]]></RmTextDataBlock></RmStri
      <RmDynamicVariableValue ROW_INDEX="2" COLUMN_INDEX="0" VALUE="1.000000"/>
     </RmDynamicVariableValueContainer>
    </RmDynamicVariable>
-   <RmMatrixVariable NAME="worldViewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="WorldViewProjection" VALUE_0="1.907286" VALUE_1="0.149426" VALUE_2="-0.053690" VALUE_3="0.000001" VALUE_4="-0.170562" VALUE_5="2.356076" VALUE_6="0.498240" VALUE_7="-0.000670" VALUE_8="0.043534" VALUE_9="-0.203891" VALUE_10="0.979049" VALUE_11="130.917252" VALUE_12="0.043490" VALUE_13="-0.203687" VALUE_14="0.978070" VALUE_15="131.786331"/>
+   <RmMatrixVariable NAME="worldViewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="WorldViewProjection" VALUE_0="-0.711845" VALUE_1="0.668514" VALUE_2="1.646000" VALUE_3="-0.000001" VALUE_4="0.788530" VALUE_5="2.212623" VALUE_6="-0.557630" VALUE_7="0.001841" VALUE_8="-0.869766" VALUE_9="0.195193" VALUE_10="-0.455423" VALUE_11="199.198883" VALUE_12="-0.868896" VALUE_13="0.194997" VALUE_14="-0.454968" VALUE_15="199.999680"/>
    <RmMatrixVariable NAME="worldMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="World" VALUE_0="1.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="1.000000" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.000000" VALUE_11="0.000000" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
    <Rm2DTextureVariable NAME="normalMap" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" FILE_NAME="..\..\..\..\..\Program Files (x86)\AMD\RenderMonkey 1.82\Examples\Media\Textures\FieldstoneBumpDOT3.tga" ORIGIN="0"/>
    <Rm2DTextureVariable NAME="specularMap" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" FILE_NAME="..\..\..\..\..\Program Files (x86)\AMD\RenderMonkey 1.82\Examples\Media\Textures\fieldstone_SM.tga" ORIGIN="0"/>
@@ -1100,28 +1100,21 @@ struct VS_OUTPUT
 
 VS_OUTPUT vs_main( VS_INPUT input )
 {
-   VS_OUTPUT Output;
+   VS_OUTPUT output;
 
-   Output.position = mul( input.position, worldViewProjectionMatrix );
-   Output.uv = input.uv;
+   output.position = mul( input.position, worldViewProjectionMatrix );
+   output.uv = input.uv;
 
    float4 worldPosition = mul( input.position, worldMatrix );
-   float3 lightDir = worldPosition.xyz - worldLightPosition.xyz;
-   Output.lightDir = normalize(lightDir);
    
-   float3 viewDir = normalize(worldPosition.xyz - worldCameraPosition.xyz);
-   Output.viewDir = viewDir;
+   output.lightDir = normalize(worldPosition.xyz - worldLightPosition.xyz);
+   output.viewDir = normalize(worldPosition.xyz - worldCameraPosition.xyz);
    
-   float3 worldNormal = mul( input.normal, (float3x3)worldMatrix );
-   Output.n = normalize(worldNormal);
+   output.t = normalize(mul(input.tangent,(float3x3)worldMatrix)); 
+   output.b = normalize(mul(input.binormal,(float3x3)worldMatrix));
+   output.n = normalize(mul(input.normal,(float3x3)worldMatrix));
    
-   float3 worldTangent = mul(input.tangent, (float3x3)worldMatrix );
-   Output.t = normalize(worldTangent);
-   
-   float3 worldBinormal = mul(input.binormal, (float3x3)worldMatrix );
-   Output.b = normalize(worldBinormal);
-   
-   return Output;
+   return output;
 }
 
 
@@ -1151,15 +1144,10 @@ samplerCUBE environmentSampler;
 float3 lightColor;
 
 float4 ps_main(PS_INPUT input) : COLOR
-{
-   float3 tangentNormal = tex2D(normalSampler, input.uv).xyz;
-   tangentNormal = normalize(tangentNormal * 2 - 1);
-   tangentNormal = float3(0,0,1); //
-   
-   
+{   
    float3x3 TBN = float3x3(normalize(input.T), normalize(input.B), normalize(input.N));
    TBN = transpose(TBN);
-   float3 worldNormal = mul(TBN, tangentNormal);
+   float3 worldNormal = mul(TBN, float3(0,0,1));
    
    float4 albedo = tex2D(diffuseSampler, input.uv);
    float3 lightDir = normalize(input.lightDir);
@@ -1180,8 +1168,8 @@ float4 ps_main(PS_INPUT input) : COLOR
    }
 
    float3 viewReflect = reflect(viewDir,worldNormal);
+   
    float3 environment = texCUBE(environmentSampler,viewReflect).rgb;
-
    float3 ambient = float3(0.1f, 0.1f, 0.1f) * albedo;
    
    return float4(ambient + diffuse + specular + environment * 0.5f, 1);

@@ -1,11 +1,5 @@
-//**********************************************************************
-//
-// ShaderFramework.cpp
-//
-//**********************************************************************
-
 #include "UVAnimation.h"
-#include <stdio.h>
+#include <cstdio>
 
 // 전역변수
 #define PI				3.14159265f
@@ -20,7 +14,7 @@ float					rotationY = 0.0f;
 // D3D 관련
 LPDIRECT3D9             d3d = NULL;				// D3D
 LPDIRECT3DDEVICE9       d3dDevice = NULL;				// D3D 장치
-			
+
 //폰트
 ID3DXFont*              font1 = NULL;
 ID3DXFont*              font2 = NULL;
@@ -28,7 +22,7 @@ ID3DXFont*              font2 = NULL;
 // 모델
 LPD3DXMESH				disc = NULL;
 
-// 쉐이더
+// 셰이더
 LPD3DXEFFECT			uvAnimationShader = NULL;
 
 // 텍스처
@@ -36,7 +30,7 @@ LPDIRECT3DTEXTURE9		stoneDM = NULL;
 LPDIRECT3DTEXTURE9		stoneSM = NULL;
 
 // 프로그램 이름
-const char*				appName = "UV애니메이션 프레임워크";
+const char*				appName = "UVAnimation Framework";
 
 //카메라 위치
 D3DXVECTOR4				worldCameraPosition(200.0f, 100.0f, -200.0f, 1.0f);
@@ -45,7 +39,7 @@ D3DXVECTOR4				worldCameraPosition(200.0f, 100.0f, -200.0f, 1.0f);
 D3DXVECTOR4				worldLightPosition(500.0f, 500.0f, -500.0f, 1.0f);
 
 //빛의 색상
-D3DXVECTOR4				lightColor(0.7f, 0.7f, 1.0f,1.0f);
+D3DXVECTOR4				lightColor(0.7f, 0.7f, 1.0f, 1.0f);
 
 //셰이더에 넘겨줄 전역변수
 float					power = 20.0f; //정반사광 계산시 지수로 사용할 수 
@@ -64,7 +58,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	// 프로그램 창을 생성한다.
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	HWND hWnd = CreateWindow(appName, appName,style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
+	HWND hWnd = CreateWindow(appName, appName, style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	// Client Rect 크기가 WIN_WIDTH, WIN_HEIGHT와 같도록 크기를 조정한다.
@@ -82,7 +76,9 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	// D3D를 비롯한 모든 것을 초기화한다.
 	if (!InitEverything(hWnd))
+	{
 		PostQuitMessage(1);
+	}
 
 	// 메시지 루프
 	MSG msg;
@@ -195,9 +191,13 @@ void RenderFrame()
 	d3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
-// 3D 물체등을 그린다.
+// 3D 물체를 그린다.
 void RenderScene()
 {
+	// 월드행렬을 만든다.
+	D3DXMATRIXA16			worldMatrix;
+	D3DXMatrixRotationY(&worldMatrix, rotationY);
+
 	// 뷰 행렬을 만든다.
 	D3DXMATRIXA16			viewMatrix;
 	D3DXVECTOR3 eye(worldCameraPosition.x, worldCameraPosition.y, worldCameraPosition.z);
@@ -209,31 +209,28 @@ void RenderScene()
 	D3DXMATRIXA16			projectionMatrix;
 	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
-	// 월드행렬을 만든다.
-	D3DXMATRIXA16			worldMatrix;
-	D3DXMatrixRotationY(&worldMatrix, rotationY);
+	//뷰 X 투영행렬을 만든다.
+	D3DXMATRIXA16			viewProjectionMatrix;
+	D3DXMatrixMultiply(&viewProjectionMatrix, &viewMatrix, &projectionMatrix);
 
-	// 쉐이더 전역변수들을 설정
+	// 정점 셰이더 전역변수들을 설정
 	uvAnimationShader->SetMatrix("worldMatrix", &worldMatrix);
-	uvAnimationShader->SetMatrix("viewMatrix", &viewMatrix);
-	uvAnimationShader->SetMatrix("projectionMatrix", &projectionMatrix);
-
-	uvAnimationShader->SetVector("worldCameraPosition", &worldCameraPosition);
+	uvAnimationShader->SetMatrix("viewProjectionMatrix", &viewProjectionMatrix);
 	uvAnimationShader->SetVector("worldLightPosition", &worldLightPosition);
-	uvAnimationShader->SetFloat("power", power);
-
+	uvAnimationShader->SetVector("worldCameraPosition", &worldCameraPosition);
+	//시스템 시간을 구한다.
+	ULONGLONG tick = GetTickCount64();
+	uvAnimationShader->SetFloat("time", tick / 1000.0f);
 	uvAnimationShader->SetFloat("waveHeight", waveHeight);
 	uvAnimationShader->SetFloat("speed", speed);
 	uvAnimationShader->SetFloat("waveFrequency", waveFrequency);
 	uvAnimationShader->SetFloat("uvSpeed", uvSpeed);
-
-	//시스템 시간을 구한다.
-	ULONGLONG tick = GetTickCount64();
-	uvAnimationShader->SetFloat("time", tick/1000.0f);
-
-	uvAnimationShader->SetVector("lightColor", &lightColor);
+	
+	// 픽셀 셰이더 전역변수들을 설정
+	uvAnimationShader->SetFloat("power", power);
 	uvAnimationShader->SetTexture("diffuseMap_Tex", stoneDM);
 	uvAnimationShader->SetTexture("specularMap_Tex", stoneSM);
+	uvAnimationShader->SetVector("lightColor", &lightColor);
 
 	UINT numPasses = 0;
 	uvAnimationShader->Begin(&numPasses, NULL);
@@ -250,7 +247,7 @@ void RenderScene()
 	uvAnimationShader->End();
 }
 
-// 디버그 정보 등을 출력.
+// 디버그 정보 출력.
 void RenderInfo()
 {
 	// 텍스트 색상
@@ -271,8 +268,8 @@ void RenderInfo()
 		Speed(E,D) : %.1f\n\n\
 		WaveFrequency(R,F) : %.1f\n\n\
 		UVSpeed(T,G) : %.1f\n\n\
-		ESC: 종료", 
-		power,waveHeight,speed,waveFrequency,uvSpeed);
+		ESC: 종료",
+		power, waveHeight, speed, waveFrequency, uvSpeed);
 
 	// 키 입력 정보를 출력
 	font1->DrawText(NULL, string, -1, &rect1, 0, fontColor);
@@ -287,7 +284,7 @@ bool InitEverything(HWND hWnd)
 		return false;
 	}
 
-	// 모델, 쉐이더, 텍스처등을 로딩
+	// 모델, 셰이더, 텍스처등을 로딩
 	if (!LoadAssets())
 	{
 		return false;
@@ -295,8 +292,7 @@ bool InitEverything(HWND hWnd)
 
 	// 폰트를 로딩
 	if (FAILED(D3DXCreateFont(d3dDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),
-		"Arial", &font1)))
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE), "Arial", &font1)))
 	{
 		return false;
 	}
@@ -335,7 +331,7 @@ bool InitD3D(HWND hWnd)
 
 	// D3D장치를 생성한다.
 	if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,&d3dpp, &d3dDevice)))
+		D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3dDevice)))
 	{
 		return false;
 	}
@@ -357,7 +353,7 @@ bool LoadAssets()
 		return false;
 	}
 
-	// 쉐이더 로딩
+	// 셰이더 로딩
 	uvAnimationShader = LoadShader("UVAnimation.fx");
 	if (!uvAnimationShader)
 	{
@@ -373,7 +369,7 @@ bool LoadAssets()
 	return true;
 }
 
-// 쉐이더 로딩
+// 셰이더 로딩
 LPD3DXEFFECT LoadShader(const char * filename)
 {
 	LPD3DXEFFECT ret = NULL;
@@ -385,11 +381,9 @@ LPD3DXEFFECT LoadShader(const char * filename)
 	dwShaderFlags |= D3DXSHADER_DEBUG;
 #endif
 
-	D3DXCreateEffectFromFile(d3dDevice, filename,
-		NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
+	D3DXCreateEffectFromFile(d3dDevice, filename, NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
-	// 쉐이더 로딩에 실패한 경우 output창에 쉐이더
-	// 컴파일 에러를 출력한다.
+	// 셰이더 로딩에 실패한 경우 output창에 셰이더 컴파일 에러를 출력한다.
 	if (!ret && pError)
 	{
 		int size = pError->GetBufferSize();
@@ -449,6 +443,7 @@ void Cleanup()
 		font2->Release();
 		font2 = NULL;
 	}
+
 	// 모델을 release 한다.
 	if (disc)
 	{
@@ -456,7 +451,7 @@ void Cleanup()
 		disc = NULL;
 	}
 
-	// 쉐이더를 release 한다.
+	// 셰이더를 release 한다.
 	if (uvAnimationShader)
 	{
 		uvAnimationShader->Release();
@@ -481,7 +476,6 @@ void Cleanup()
 		d3dDevice->Release();
 		d3dDevice = NULL;
 	}
-
 	if (d3d)
 	{
 		d3d->Release();

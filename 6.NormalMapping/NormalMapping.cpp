@@ -1,11 +1,5 @@
-//**********************************************************************
-//
-// NormalMapping.cpp
-//
-//**********************************************************************
-
 #include "NormalMapping.h"
-#include <stdio.h>
+#include <cstdio>
 
 // 전역변수
 #define PI				3.14159265f
@@ -21,13 +15,13 @@ float					rotationY = 0.0f;
 LPDIRECT3D9             gpD3D = NULL;				// D3D
 LPDIRECT3DDEVICE9       gpD3DDevice = NULL;				// D3D 장치
 
-														//폰트
-ID3DXFont*              gpFont = NULL;
+//폰트
+ID3DXFont*              font = NULL;
 
 // 모델
 LPD3DXMESH				sphere = NULL;
 
-// 쉐이더
+// 셰이더
 LPD3DXEFFECT			normalMappingShader = NULL;
 
 // 텍스처
@@ -36,7 +30,7 @@ LPDIRECT3DTEXTURE9		stoneSM = NULL;
 LPDIRECT3DTEXTURE9		stoneNM = NULL;
 
 // 프로그램 이름
-const char*				gAppName = "법선 매핑 프레임워크";
+const char*				gAppName = "NormalMapping Framework";
 
 //카메라 위치
 D3DXVECTOR4				worldCameraPosition(0.0f, 0.0f, -200.0f, 1.0f);
@@ -55,14 +49,12 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
 	// 윈도우 클래스를 등록한다.
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
-		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-		gAppName, NULL };
+		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,gAppName, NULL };
 	RegisterClassEx(&wc);
 
 	// 프로그램 창을 생성한다.
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	HWND hWnd = CreateWindow(gAppName, gAppName,
-		style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
+	HWND hWnd = CreateWindow(gAppName, gAppName, style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	// Client Rect 크기가 WIN_WIDTH, WIN_HEIGHT와 같도록 크기를 조정한다.
@@ -97,7 +89,6 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 			PlayDemo();
 		}
 	}
-
 	UnregisterClass(gAppName, wc.hInstance);
 	return 0;
 }
@@ -116,7 +107,6 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		return 0;
 	}
-
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
@@ -185,9 +175,12 @@ void RenderFrame()
 	gpD3DDevice->Present(NULL, NULL, NULL, NULL);
 }
 
-// 3D 물체등을 그린다.
+// 3D 물체를 그린다.
 void RenderScene()
 {
+	// 월드행렬을 만든다.
+	D3DXMATRIXA16			worldMatrix;
+	D3DXMatrixRotationY(&worldMatrix, rotationY);
 
 	// 뷰 행렬을 만든다.
 	D3DXMATRIXA16			viewMatrix;
@@ -200,13 +193,10 @@ void RenderScene()
 	D3DXMATRIXA16			projectionMatrix;
 	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
+	//Y축 기준 회전행렬
 	D3DXMATRIX cameraRotationMatrix;
 	D3DXVECTOR3 v1(0.0f, 1.0f, 0.0f);
 	D3DXMatrixRotationAxis(&cameraRotationMatrix, &v1, rotationY);
-	
-	// 월드행렬을 만든다.
-	D3DXMATRIXA16			worldMatrix;
-	D3DXMatrixRotationY(&worldMatrix, rotationY);
 
 	//월드 X 뷰 X 투영 행렬을 만든다.
 	D3DXMATRIXA16 worldViewMatrix;
@@ -214,18 +204,18 @@ void RenderScene()
 	D3DXMatrixMultiply(&worldViewMatrix, &worldMatrix, &viewMatrix);
 	D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
 
-	// 쉐이더 전역변수들을 설정
+	// 정점 셰이더 전역변수 설정
 	normalMappingShader->SetMatrix("worldMatrix", &worldMatrix);
 	normalMappingShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
-
-	normalMappingShader->SetVector("worldCameraPosition", &worldCameraPosition);
 	normalMappingShader->SetVector("worldLightPosition", &worldLightPosition);
-	normalMappingShader->SetFloat("power", Pow);
+	normalMappingShader->SetVector("worldCameraPosition", &worldCameraPosition);
 
-	normalMappingShader->SetVector("lightColor", &lightColor);
+	// 픽셀 셰이더 전역변수 설정
 	normalMappingShader->SetTexture("diffuseMap_Tex", stoneDM);
 	normalMappingShader->SetTexture("specularMap_Tex", stoneSM);
 	normalMappingShader->SetTexture("normalMap_Tex", stoneNM);
+	normalMappingShader->SetVector("lightColor", &lightColor);
+	normalMappingShader->SetFloat("power", Pow);
 
 	UINT numPasses = 0;
 	normalMappingShader->Begin(&numPasses, NULL);
@@ -242,7 +232,7 @@ void RenderScene()
 	normalMappingShader->End();
 }
 
-// 디버그 정보 등을 출력.
+// 디버그 정보 출력.
 void RenderInfo()
 {
 	// 텍스트 색상
@@ -260,7 +250,7 @@ void RenderInfo()
 	sprintf(string, "ESC: 데모종료\nA,D로 물체 회전\nW,S로 카메라 줌");
 
 	// 키 입력 정보를 출력
-	gpFont->DrawText(NULL, string, -1, &rct, 0, fontColor);
+	font->DrawText(NULL, string, -1, &rct, 0, fontColor);
 }
 
 //초기화 코드
@@ -272,7 +262,7 @@ bool InitEverything(HWND hWnd)
 		return false;
 	}
 
-	// 모델, 쉐이더, 텍스처등을 로딩
+	// 모델, 셰이더, 텍스처등을 로딩
 	if (!LoadAssets())
 	{
 		return false;
@@ -280,8 +270,7 @@ bool InitEverything(HWND hWnd)
 
 	// 폰트를 로딩
 	if (FAILED(D3DXCreateFont(gpD3DDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),
-		"Arial", &gpFont)))
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE), "Arial", &font)))
 	{
 		return false;
 	}
@@ -320,8 +309,7 @@ bool InitD3D(HWND hWnd)
 
 	// D3D장치를 생성한다.
 	if (FAILED(gpD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &gpD3DDevice)))
+		D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &gpD3DDevice)))
 	{
 		return false;
 	}
@@ -348,7 +336,7 @@ bool LoadAssets()
 		return false;
 	}
 
-	// 쉐이더 로딩
+	// 셰이더 로딩
 	normalMappingShader = LoadShader("normalMapping.fx");
 	if (!normalMappingShader)
 	{
@@ -364,7 +352,7 @@ bool LoadAssets()
 	return true;
 }
 
-// 쉐이더 로딩
+// 셰이더 로딩
 LPD3DXEFFECT LoadShader(const char * filename)
 {
 	LPD3DXEFFECT ret = NULL;
@@ -379,8 +367,7 @@ LPD3DXEFFECT LoadShader(const char * filename)
 	D3DXCreateEffectFromFile(gpD3DDevice, filename,
 		NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
-	// 쉐이더 로딩에 실패한 경우 output창에 쉐이더
-	// 컴파일 에러를 출력한다.
+	// 셰이더 로딩에 실패한 경우 output창에 셰이더 컴파일 에러를 출력한다.
 	if (!ret && pError)
 	{
 		int size = pError->GetBufferSize();
@@ -394,7 +381,6 @@ LPD3DXEFFECT LoadShader(const char * filename)
 			delete[] str;
 		}
 	}
-
 	return ret;
 }
 
@@ -408,7 +394,6 @@ LPD3DXMESH LoadModel(const char * filename)
 		OutputDebugString(filename);
 		OutputDebugString("\n");
 	};
-
 	return ret;
 }
 
@@ -422,7 +407,6 @@ LPDIRECT3DTEXTURE9 LoadTexture(const char * filename)
 		OutputDebugString(filename);
 		OutputDebugString("\n");
 	}
-
 	return ret;
 }
 
@@ -430,10 +414,10 @@ LPDIRECT3DTEXTURE9 LoadTexture(const char * filename)
 void Cleanup()
 {
 	// 폰트를 release 한다.
-	if (gpFont)
+	if (font)
 	{
-		gpFont->Release();
-		gpFont = NULL;
+		font->Release();
+		font = NULL;
 	}
 
 	// 모델을 release 한다.
@@ -443,7 +427,7 @@ void Cleanup()
 		sphere = NULL;
 	}
 
-	// 쉐이더를 release 한다.
+	// 셰이더를 release 한다.
 	if (normalMappingShader)
 	{
 		normalMappingShader->Release();
@@ -473,7 +457,6 @@ void Cleanup()
 		gpD3DDevice->Release();
 		gpD3DDevice = NULL;
 	}
-
 	if (gpD3D)
 	{
 		gpD3D->Release();

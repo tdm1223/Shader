@@ -955,7 +955,7 @@
       <RmRegistryBranch NAME="Effect Workspace.UVAnimation" API="" XML_VERSION="RenderMonkey 1.71">
        <RmRegistryBranch NAME="Disassembly" API="" XML_VERSION="RenderMonkey 1.71"/>
        <RmStringVariable NAME="Editing Shader" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-Vertex Shader]]></RmTextDataBlock></RmStringVariable>
+Pixel Shader]]></RmTextDataBlock></RmStringVariable>
        <RmStringVariable NAME="Editing Pass" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 Pass 0]]></RmTextDataBlock></RmStringVariable>
        <RmIntegerVariable NAME="Y" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="6" MIN="-10" MAX="10" CLAMP="FALSE"/>
@@ -1030,22 +1030,21 @@ Pass 0]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
     <RmRegistryBranch NAME="WORKSPACE" API="" XML_VERSION="RenderMonkey 1.71">
      <RmStringVariable NAME="LAST_SAVE" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-28/8/2018 20:34:28]]></RmTextDataBlock></RmStringVariable>
+14/10/2018 15:58:22]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey Version 1.82 (build 322)]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="XML_VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey 1.71]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="BASE_WORKSPACE_PATH" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-C:\Users\SGerm\Desktop\Shader\UVAnimation\]]></RmTextDataBlock></RmStringVariable>
+C:\Users\SGerm\Desktop\Shader\8.UVAnimation\]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
    </RmRegistryBranch>
   </RmRegistryBranch>
   <RmDirectXEffect NAME="UVAnimation" API="D3D" ACTIVE_CAMERA="">
    <RmMatrixVariable NAME="worldMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="World" VALUE_0="1.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="1.000000" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.000000" VALUE_11="0.000000" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
-   <RmMatrixVariable NAME="viewMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="View" VALUE_0="0.999675" VALUE_1="0.011633" VALUE_2="-0.022694" VALUE_3="0.000000" VALUE_4="0.003021" VALUE_5="0.829626" VALUE_6="0.558312" VALUE_7="-0.000065" VALUE_8="0.025322" VALUE_9="-0.558199" VALUE_10="0.829320" VALUE_11="199.999710" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
-   <RmMatrixVariable NAME="projectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="Projection" VALUE_0="2.086998" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="-1.001001" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="0.000000"/>
+   <RmMatrixVariable NAME="viewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewProjection" VALUE_0="1.872283" VALUE_1="-0.361021" VALUE_2="-0.848399" VALUE_3="0.000014" VALUE_4="0.447258" VALUE_5="2.372316" VALUE_6="-0.022469" VALUE_7="-0.000985" VALUE_8="0.401473" VALUE_9="-0.067030" VALUE_10="0.914511" VALUE_11="247.148300" VALUE_12="0.401071" VALUE_13="-0.066963" VALUE_14="0.913596" VALUE_15="247.901154"/>
    <RmVectorVariable NAME="worldLightPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="500.000000" VALUE_1="500.000000" VALUE_2="-500.000000" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
-   <RmVectorVariable NAME="worldCameraPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewPosition" VALUE_0="-5.064448" VALUE_1="111.639679" VALUE_2="-165.863831" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
+   <RmVectorVariable NAME="worldCameraPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewPosition" VALUE_0="-99.426018" VALUE_1="16.600304" VALUE_2="-226.481522" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
    <RmFloatVariable NAME="power" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="20.000000" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
    <RmDynamicVariable NAME="lightColor" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VARIABLE_TYPE="FLOAT" ROWS="3" COLUMNS="1" FIXED_SIZE="TRUE" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE" NORMALIZE="FALSE">
     <RmDynamicVariableValueContainer>
@@ -1054,7 +1053,7 @@ C:\Users\SGerm\Desktop\Shader\UVAnimation\]]></RmTextDataBlock></RmStringVariabl
      <RmDynamicVariableValue ROW_INDEX="2" COLUMN_INDEX="0" VALUE="1.000000"/>
     </RmDynamicVariableValueContainer>
    </RmDynamicVariable>
-   <RmFloatVariable NAME="time" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="Time0_X" VALUE="22.566645" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
+   <RmFloatVariable NAME="time" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="Time0_X" VALUE="20.085152" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
    <RmFloatVariable NAME="waveHeight" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="3.000000" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
    <RmFloatVariable NAME="speed" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="10.000000" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
    <RmFloatVariable NAME="waveFrequency" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE="10.000000" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE"/>
@@ -1068,7 +1067,7 @@ C:\Users\SGerm\Desktop\Shader\UVAnimation\]]></RmTextDataBlock></RmStringVariabl
      <RmStreamChannel NAME="TexCoord_0" API="" DATA_SIZE="8" DATA_TYPE="1" REGISTER="0" USAGE="5" USAGE_INDEX="0" ATTRIBUTE_NAME="rm_Color"/>
     </RmStream>
    </RmStreamMap>
-   <RmModelData NAME="Model" API="" FILE_NAME="..\UVAnimation\disc.x" ORIENTATION="0"/>
+   <RmModelData NAME="Model" API="" FILE_NAME=".\disc.x" ORIENTATION="0"/>
    <RmPass NAME="Pass 0" API="D3D" PASS_INDEX="0" ENABLED="TRUE">
     <RmModelReference NAME="Model" API=""/>
     <RmHLSLShader NAME="Vertex Shader" API="D3D" PIXEL_SHADER="FALSE" TARGET="vs_2_0" ENTRY_POINT="vs_main" COMPILER_FLAGS="0"><RmShaderCode TYPE="TEXT"><![CDATA[
@@ -1089,8 +1088,7 @@ struct VS_OUTPUT
 };
 
 float4x4 worldMatrix;
-float4x4 viewMatrix;
-float4x4 projectionMatrix;
+float4x4 viewProjectionMatrix;
 
 float4 worldLightPosition;
 float4 worldCameraPosition;
@@ -1110,19 +1108,12 @@ VS_OUTPUT vs_main(VS_INPUT input)
    
    output.position = mul(input.position,worldMatrix);
    
-   //광원의 위치에서 현재 위치까지 선을 그어 입사광 벡터를 만듦
-   float3 lightDir = output.position.xyz-worldLightPosition.xyz;
-   lightDir = normalize(lightDir);
+   float3 lightDir = normalize(output.position.xyz-worldLightPosition.xyz);
    
-   float3 viewDir = normalize(output.position.xyz-worldCameraPosition.xyz);
-   output.viewDir = viewDir;
+   output.viewDir = normalize(output.position.xyz-worldCameraPosition.xyz); 
+   output.position=mul(output.position,viewProjectionMatrix);
    
-   output.position=mul(output.position,viewMatrix);
-   output.position=mul(output.position,projectionMatrix);
-   
-   //법선을 월드공간으로 변환하고 정규화
-   float3 worldNormal = mul(input.normal,(float3x3)worldMatrix);
-   worldNormal = normalize(worldNormal);
+   float3 worldNormal = normalize(mul(input.normal,(float3x3)worldMatrix));
    
    output.diffuse=dot(-lightDir,worldNormal);
    output.reflection = reflect(lightDir,worldNormal);
@@ -1132,15 +1123,14 @@ VS_OUTPUT vs_main(VS_INPUT input)
 }
 
 ]]></RmShaderCode>
-     <RmShaderConstant NAME="projectionMatrix" API="" REGISTER="8"/>
-     <RmShaderConstant NAME="speed" API="" REGISTER="16"/>
-     <RmShaderConstant NAME="time" API="" REGISTER="14"/>
-     <RmShaderConstant NAME="uvSpeed" API="" REGISTER="18"/>
-     <RmShaderConstant NAME="viewMatrix" API="" REGISTER="4"/>
-     <RmShaderConstant NAME="waveFrequency" API="" REGISTER="17"/>
-     <RmShaderConstant NAME="waveHeight" API="" REGISTER="15"/>
-     <RmShaderConstant NAME="worldCameraPosition" API="" REGISTER="13"/>
-     <RmShaderConstant NAME="worldLightPosition" API="" REGISTER="12"/>
+     <RmShaderConstant NAME="speed" API="" REGISTER="12"/>
+     <RmShaderConstant NAME="time" API="" REGISTER="10"/>
+     <RmShaderConstant NAME="uvSpeed" API="" REGISTER="14"/>
+     <RmShaderConstant NAME="viewProjectionMatrix" API="" REGISTER="4"/>
+     <RmShaderConstant NAME="waveFrequency" API="" REGISTER="13"/>
+     <RmShaderConstant NAME="waveHeight" API="" REGISTER="11"/>
+     <RmShaderConstant NAME="worldCameraPosition" API="" REGISTER="9"/>
+     <RmShaderConstant NAME="worldLightPosition" API="" REGISTER="8"/>
      <RmShaderConstant NAME="worldMatrix" API="" REGISTER="0"/>
     </RmHLSLShader>
     <RmHLSLShader NAME="Pixel Shader" API="D3D" PIXEL_SHADER="TRUE" TARGET="ps_2_0" ENTRY_POINT="ps_main" COMPILER_FLAGS="0"><RmShaderCode TYPE="TEXT"><![CDATA[
@@ -1153,15 +1143,13 @@ struct PS_INPUT
 };
 
 float power;
-
 sampler2D diffuseSampler;
 sampler2D specularSampler;
-
 float3 lightColor;
 
 float4 ps_main(PS_INPUT input) : COLOR
 {
-   float4 albedo = tex2D(diffuseSampler,input.uv); //디퓨즈맵 샘플링
+   float4 albedo = tex2D(diffuseSampler,input.uv); 
    float3 diffuse = lightColor * albedo.rgb * saturate(input.diffuse);
    
    float3 reflection = normalize(input.reflection);
@@ -1172,9 +1160,8 @@ float4 ps_main(PS_INPUT input) : COLOR
       specular = saturate(dot(reflection,-viewDir));
       specular = pow(specular,power);
       
-      float4 specularIntensity = tex2D(specularSampler,input.uv); // 스페큘러맵 샘플링
-      specular = lightColor * specularIntensity.rgb * specular;
-   
+      float4 specularIntensity = tex2D(specularSampler,input.uv); 
+      specular = lightColor * specularIntensity.rgb * specular;  
    }
    
    float3 ambient = float3(0.1f,0.1f,0.1f) * albedo;
