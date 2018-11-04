@@ -1,12 +1,5 @@
-//**********************************************************************
-//
-// PostProcessing.cpp
-// 
-//
-//**********************************************************************
-
 #include "PostProcessing.h"
-#include <stdio.h>
+#include <cstdio>
 
 #define PI           3.14159265f
 #define FOV          (PI/4.0f)							// 시야각
@@ -14,21 +7,19 @@
 #define NEAR_PLANE   1									// 근접 평면
 #define FAR_PLANE    10000								// 원거리 평면
 
-
-//----------------------------------------------------------------------
 // 전역변수
-//----------------------------------------------------------------------
 
 // D3D 관련
 LPDIRECT3D9             d3d = NULL;				// D3D
 LPDIRECT3DDEVICE9       d3dDevice = NULL;		// D3D 장치
-													
-ID3DXFont*              font= NULL;             // 폰트
+
+// 폰트													
+ID3DXFont*              font= NULL;             
 
 // 모델
 LPD3DXMESH				teapot = NULL;
 
-// 쉐이더
+// 셰이더
 LPD3DXEFFECT			environmentMappingShader = NULL;
 LPD3DXEFFECT			noEffect = NULL;
 LPD3DXEFFECT			grayScale = NULL;
@@ -41,7 +32,7 @@ LPDIRECT3DTEXTURE9		stoneNM = NULL;
 LPDIRECT3DCUBETEXTURE9	snowENV = NULL;
 
 // 프로그램 이름
-const char*				appName = "포스트 프로세싱";
+const char*				appName = "PostProcessing Framework";
 
 // 회전값
 float					rotationY = 0.0f;
@@ -63,7 +54,7 @@ LPDIRECT3DINDEXBUFFER9			fullScreenQuadIB = NULL;
 // 장면 렌더타깃
 LPDIRECT3DTEXTURE9		sceneRenderTarget = NULL;
 
-// 사용할 포스트프로세스 쉐이더의 색인
+// 사용할 포스트프로세스 셰이더의 색인
 int postProcessIndex = 0;
 
 // 진입점
@@ -77,8 +68,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	// 프로그램 창을 생성한다.
 	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	HWND hWnd = CreateWindow(appName, appName,
-		style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
+	HWND hWnd = CreateWindow(appName, appName,style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	// Client Rect 크기가 WIN_WIDTH, WIN_HEIGHT와 같도록 크기를 조정한다.
@@ -96,7 +86,9 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	// D3D를 비롯한 모든 것을 초기화한다.
 	if (!InitEverything(hWnd))
+	{
 		PostQuitMessage(1);
+	}
 
 	// 메시지 루프
 	MSG msg;
@@ -126,7 +118,6 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		ProcessInput(hWnd, wParam);
 		break;
-
 	case WM_DESTROY:
 		Cleanup();
 		PostQuitMessage(0);
@@ -168,7 +159,7 @@ void Update()
 // 렌더링
 void RenderFrame()
 {
-	D3DCOLOR bgColour = 0x000000FF;	
+	D3DCOLOR bgColour = 0x00000000;	
 
 	d3dDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
 
@@ -183,10 +174,10 @@ void RenderFrame()
 }
 
 
-// 3D 물체등을 그린다.
+// 3D 물체를 그린다.
 void RenderScene()
 {
-#pragma region 장면을 렌더타깃 안에 그린다
+#pragma region 1. 장면을 렌더타깃 안에 그린다
 	// 현재 하드웨어 벡버퍼
 	LPDIRECT3DSURFACE9 backBuffer = NULL;
 	d3dDevice->GetRenderTarget(0, &backBuffer);
@@ -203,17 +194,6 @@ void RenderScene()
 	// 저번 프레임에 그렸던 장면을 지운다
 	d3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0xFF000000, 1.0f, 0);
 
-	// 뷰 행렬을 만든다.
-	D3DXMATRIXA16 viewMatrix;
-	D3DXVECTOR3 eye(worldCameraPosition.x, worldCameraPosition.y, worldCameraPosition.z);
-	D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-	D3DXMatrixLookAtLH(&viewMatrix, &eye, &at, &up);
-
-	// 투영행렬을 만든다.
-	D3DXMATRIXA16			projectionMatrix;
-	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
-
 	// 프레임마다 0.4도씩 회전을 시킨다.
 	rotationY += 0.4f * PI / 180.0f;
 	if (rotationY > 2 * PI)
@@ -225,26 +205,37 @@ void RenderScene()
 	D3DXMATRIXA16			worldMatrix;
 	D3DXMatrixRotationY(&worldMatrix, rotationY);
 
+	// 뷰 행렬을 만든다.
+	D3DXMATRIXA16 viewMatrix;
+	D3DXVECTOR3 eye(worldCameraPosition.x, worldCameraPosition.y, worldCameraPosition.z);
+	D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+	D3DXMatrixLookAtLH(&viewMatrix, &eye, &at, &up);
+	
+	// 투영행렬을 만든다.
+	D3DXMATRIXA16			projectionMatrix;
+	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
+
 	// 월드/뷰/투영행렬을 미리 곱한다.
 	D3DXMATRIXA16 worldViewMatrix;
 	D3DXMATRIXA16 worldViewProjectionMatrix;
 	D3DXMatrixMultiply(&worldViewMatrix, &worldMatrix, &viewMatrix);
 	D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
 
-	// 쉐이더 전역변수들을 설정
+	// 정점 셰이더 전역변수 설정
 	environmentMappingShader->SetMatrix("worldMatrix", &worldMatrix);
 	environmentMappingShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
-
 	environmentMappingShader->SetVector("worldLightPosition", &worldLightPosition);
 	environmentMappingShader->SetVector("worldCameraPosition", &worldCameraPosition);
 
-	environmentMappingShader->SetVector("lightColor", &lightColor);
+	// 픽셀 셰이더 전역변수 설정
 	environmentMappingShader->SetTexture("diffuseMap_Tex", stoneDM);
 	environmentMappingShader->SetTexture("specularMap_Tex", stoneSM);
 	environmentMappingShader->SetTexture("normalMap_Tex", stoneNM);
 	environmentMappingShader->SetTexture("environmentMap_Tex", snowENV);
+	environmentMappingShader->SetVector("lightColor", &lightColor);
 
-	// 쉐이더를 시작한다.
+	// 셰이더를 시작한다.
 	UINT numPasses = 0;
 	environmentMappingShader->Begin(&numPasses, NULL);
 	{
@@ -261,7 +252,7 @@ void RenderScene()
 	environmentMappingShader->End();
 #pragma endregion
 
-#pragma region 포스트프로세싱을 적용한다.
+#pragma region 2. 포스트프로세싱을 적용한다.
 	// 하드웨어 백버퍼를 사용한다.
 	d3dDevice->SetRenderTarget(0, backBuffer);
 	backBuffer->Release();
@@ -299,7 +290,7 @@ void RenderScene()
 
 }
 
-// 디버그 정보 등을 출력.
+// 디버그 정보를 출력.
 void RenderInfo()
 {
 	// 텍스트 색상
@@ -308,9 +299,9 @@ void RenderInfo()
 	// 텍스트를 출력할 위치
 	RECT rect;
 	rect.left = 5;
-	rect.right = WIN_WIDTH / 3;
+	rect.right = WIN_WIDTH / 2;
 	rect.top = 5;
-	rect.bottom = WIN_HEIGHT / 3;
+	rect.bottom = WIN_HEIGHT / 2;
 
 	// 키 입력 정보를 출력
 	font->DrawText(NULL, "ESC: 데모종료\n1: 칼라\n2: 흑백\n3: 세피아", -1, &rect, 0, fontColor);
@@ -330,13 +321,12 @@ bool InitEverything(HWND hWnd)
 
 	// 렌더타깃을 만든다.
 	if (FAILED(d3dDevice->CreateTexture(WIN_WIDTH, WIN_HEIGHT,
-		1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8,
-		D3DPOOL_DEFAULT, &sceneRenderTarget, NULL)))
+		1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8,D3DPOOL_DEFAULT, &sceneRenderTarget, NULL)))
 	{
 		return false;
 	}
 
-	// 모델, 쉐이더, 텍스처등을 로딩
+	// 모델, 셰이더, 텍스처등을 로딩
 	if (!LoadAssets())
 	{
 		return false;
@@ -344,8 +334,7 @@ bool InitEverything(HWND hWnd)
 
 	// 폰트를 로딩
 	if (FAILED(D3DXCreateFont(d3dDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),
-		"Arial", &font)))
+		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),"Arial", &font)))
 	{
 		return false;
 	}
@@ -384,8 +373,7 @@ bool InitD3D(HWND hWnd)
 
 	// D3D장치를 생성한다.
 	if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &d3dDevice)))
+		D3DCREATE_HARDWARE_VERTEXPROCESSING,&d3dpp, &d3dDevice)))
 	{
 		return false;
 	}
@@ -401,44 +389,38 @@ bool LoadAssets()
 	{
 		return false;
 	}
-
 	stoneSM = LoadTexture("Fieldstone_SM.tga");
 	if (!stoneSM)
 	{
 		return false;
 	}
-
 	stoneNM = LoadTexture("Fieldstone_NM.tga");
 	if (!stoneNM)
 	{
 		return false;
 	}
-
 	D3DXCreateCubeTextureFromFile(d3dDevice, "Snow_ENV.dds", &snowENV);
 	if (!snowENV)
 	{
 		return false;
 	}
 
-	// 쉐이더 로딩
+	// 셰이더 로딩
 	environmentMappingShader = LoadShader("EnvironmentMapping.fx");
 	if (!environmentMappingShader)
 	{
 		return false;
 	}
-
 	noEffect = LoadShader("NoEffect.fx");
 	if (!noEffect)
 	{
 		return false;
 	}
-
 	grayScale = LoadShader("Grayscale.fx");
 	if (!grayScale)
 	{
 		return false;
 	}
-
 	sepia = LoadShader("Sepia.fx");
 	if (!sepia)
 	{
@@ -455,7 +437,7 @@ bool LoadAssets()
 	return true;
 }
 
-// 쉐이더 로딩
+// 셰이더 로딩
 LPD3DXEFFECT LoadShader(const char * filename)
 {
 	LPD3DXEFFECT ret = NULL;
@@ -470,8 +452,7 @@ LPD3DXEFFECT LoadShader(const char * filename)
 	D3DXCreateEffectFromFile(d3dDevice, filename,
 		NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
-	// 쉐이더 로딩에 실패한 경우 output창에 쉐이더
-	// 컴파일 에러를 출력한다.
+	// 셰이더 로딩에 실패한 경우 output창에 셰이더 컴파일 에러를 출력한다.
 	if (!ret && pError)
 	{
 		int size = pError->GetBufferSize();
@@ -533,25 +514,22 @@ void Cleanup()
 		teapot = NULL;
 	}
 
-	// 쉐이더를 release 한다.
+	// 셰이더를 release 한다.
 	if (environmentMappingShader)
 	{
 		environmentMappingShader->Release();
 		environmentMappingShader = NULL;
 	}
-
 	if (noEffect)
 	{
 		noEffect->Release();
 		noEffect = NULL;
 	}
-
 	if (grayScale)
 	{
 		grayScale->Release();
 		grayScale = NULL;
 	}
-
 	if (sepia)
 	{
 		sepia->Release();
@@ -564,19 +542,16 @@ void Cleanup()
 		stoneDM->Release();
 		stoneDM = NULL;
 	}
-
 	if (stoneSM)
 	{
 		stoneSM->Release();
 		stoneSM = NULL;
 	}
-
 	if (stoneNM)
 	{
 		stoneNM->Release();
 		stoneNM = NULL;
 	}
-
 	if (snowENV)
 	{
 		snowENV->Release();
@@ -589,13 +564,11 @@ void Cleanup()
 		fullScreenQuad->Release();
 		fullScreenQuad = NULL;
 	}
-
 	if (fullScreenQuadVB)
 	{
 		fullScreenQuadVB->Release();
 		fullScreenQuadVB = NULL;
 	}
-
 	if (fullScreenQuadIB)
 	{
 		fullScreenQuadIB->Release();
@@ -615,7 +588,6 @@ void Cleanup()
 		d3dDevice->Release();
 		d3dDevice = NULL;
 	}
-
 	if (d3d)
 	{
 		d3d->Release();

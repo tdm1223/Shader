@@ -1024,13 +1024,13 @@ ApplyShadowTorus]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
     <RmRegistryBranch NAME="WORKSPACE" API="" XML_VERSION="RenderMonkey 1.71">
      <RmStringVariable NAME="LAST_SAVE" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-20/9/2018 20:52:22]]></RmTextDataBlock></RmStringVariable>
+15/10/2018 23:19:35]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey Version 1.82 (build 322)]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="XML_VERSION" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
 RenderMonkey 1.71]]></RmTextDataBlock></RmStringVariable>
      <RmStringVariable NAME="BASE_WORKSPACE_PATH" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC=""><RmTextDataBlock TYPE="TEXT"><![CDATA[
-C:\Users\SGerm\Desktop\Shader\9-2.Shadow+SpecularMapping\]]></RmTextDataBlock></RmStringVariable>
+C:\Users\SGerm\Desktop\Shader\9.ShadowMapping\]]></RmTextDataBlock></RmStringVariable>
     </RmRegistryBranch>
    </RmRegistryBranch>
   </RmRegistryBranch>
@@ -1039,7 +1039,7 @@ C:\Users\SGerm\Desktop\Shader\9-2.Shadow+SpecularMapping\]]></RmTextDataBlock></
    <RmMatrixVariable NAME="lightViewMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="1.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="1.000000" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.000000" VALUE_11="0.000000" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="0.000000" VALUE_15="1.000000"/>
    <RmMatrixVariable NAME="lightProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="Projection" VALUE_0="1.721122" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="-1.001001" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="0.000000"/>
    <RmVectorVariable NAME="worldLightPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="500.000000" VALUE_1="500.000000" VALUE_2="-500.000000" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
-   <RmMatrixVariable NAME="viewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewProjection" VALUE_0="1.705152" VALUE_1="-0.138546" VALUE_2="0.188473" VALUE_3="-0.000001" VALUE_4="0.206239" VALUE_5="2.403342" VALUE_6="-0.099199" VALUE_7="0.000643" VALUE_8="-0.105811" VALUE_9="0.050114" VALUE_10="0.994131" VALUE_11="199.199173" VALUE_12="-0.105705" VALUE_13="0.050064" VALUE_14="0.993136" VALUE_15="199.999969"/>
+   <RmMatrixVariable NAME="viewProjectionMatrix" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="ViewProjection" VALUE_0="1.721122" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="0.000000" VALUE_4="0.000000" VALUE_5="2.414214" VALUE_6="0.000000" VALUE_7="0.000000" VALUE_8="0.000000" VALUE_9="0.000000" VALUE_10="1.001001" VALUE_11="199.199203" VALUE_12="0.000000" VALUE_13="0.000000" VALUE_14="1.000000" VALUE_15="200.000000"/>
    <RmVectorVariable NAME="worldCameraPosition" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VALUE_0="0.000000" VALUE_1="0.000000" VALUE_2="0.000000" VALUE_3="1.000000" MIN="-10.000000" MAX="10.000000" CLAMP="FALSE" NORMALIZE="FALSE"/>
    <RmDynamicVariable NAME="lightColor" API="" ARTIST_EDITABLE="FALSE" VARIABLE_SEMANTIC="" VARIABLE_TYPE="FLOAT" ROWS="3" COLUMNS="1" FIXED_SIZE="TRUE" MIN="-1.000000" MAX="1.000000" CLAMP="FALSE" NORMALIZE="FALSE">
     <RmDynamicVariableValueContainer>
@@ -1075,7 +1075,7 @@ struct VS_OUTPUT
    float4 position: POSITION;
    float2 uv : TEXCOORD0;
    float4 clipPosition: TEXCOORD1;
-   float3 diffuse: TEXCOORD2; //난반사광 결과
+   float3 diffuse: TEXCOORD2;
    float3 viewDir : TEXCOORD3;
    float3 reflection:TEXCOORD4;
 };
@@ -1095,7 +1095,6 @@ VS_OUTPUT vs_main( VS_INPUT input )
    
    float4x4 lightViewMatrixTmp = lightViewMatrix;
    
-   //물체를 그리기 위한 공간 변환 
    output.position = mul(input.position, worldMatrix);
 
    float3 lightDir = normalize(output.position.xyz-worldLightPosition.xyz);
@@ -1103,7 +1102,6 @@ VS_OUTPUT vs_main( VS_INPUT input )
    float3 viewDir = normalize(output.position.xyz-worldCameraPosition.xyz);
    output.viewDir = viewDir;
    
-   //깊이를 구하기 위한 공간으로 변환 
    output.clipPosition = mul(output.position, lightViewMatrix);
    output.clipPosition = mul(output.clipPosition, lightProjectionMatrix);
   
@@ -1125,8 +1123,10 @@ VS_OUTPUT vs_main( VS_INPUT input )
      <RmShaderConstant NAME="worldMatrix" API="" REGISTER="0"/>
     </RmHLSLShader>
     <RmHLSLShader NAME="Pixel Shader" API="D3D" PIXEL_SHADER="TRUE" TARGET="ps_2_0" ENTRY_POINT="ps_main" COMPILER_FLAGS="0"><RmShaderCode TYPE="TEXT"><![CDATA[
-sampler2D shadowSampler;
 float3 lightColor;
+sampler2D diffuseSampler;
+sampler2D specularSampler;
+sampler2D shadowSampler;
 
 struct PS_INPUT
 {
@@ -1136,9 +1136,6 @@ struct PS_INPUT
    float3 viewDir : TEXCOORD3;
    float3 reflection : TEXCOORD4;
 };
-
-sampler2D diffuseSampler;
-sampler2D specularSampler;
 
 float4 ps_main(PS_INPUT input) : COLOR
 {
@@ -1180,9 +1177,9 @@ float4 ps_main(PS_INPUT input) : COLOR
 
 
 ]]></RmShaderCode>
-     <RmSampler NAME="diffuseSampler" API="" REGISTER="1"/>
-     <RmSampler NAME="shadowSampler" API="" REGISTER="0"/>
-     <RmSampler NAME="specularSampler" API="" REGISTER="2"/>
+     <RmSampler NAME="diffuseSampler" API="" REGISTER="0"/>
+     <RmSampler NAME="shadowSampler" API="" REGISTER="2"/>
+     <RmSampler NAME="specularSampler" API="" REGISTER="1"/>
      <RmShaderConstant NAME="lightColor" API="" REGISTER="0"/>
     </RmHLSLShader>
     <RmStreamMapReference NAME="Stream Mapping" API=""/>

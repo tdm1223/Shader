@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // EnvironmentMapping
 //--------------------------------------------------------------//
-string Sepia_EnvironmentMapping_Model : ModelData = "..\\DxFramework\\Teapot.x";
+string Sepia_EnvironmentMapping_Model : ModelData = ".\\TeapotWithTangent.x";
 
 texture SceneTexture_Tex : RenderColorTarget
 <
@@ -114,7 +114,7 @@ sampler2D diffuseSampler = sampler_state
 };
 texture specularMap_Tex
 <
-   string ResourceName = "..\\DxFramework\\Fieldstone_SM.tga";
+   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\fieldstone_SM.tga";
 >;
 sampler2D specularSampler = sampler_state
 {
@@ -183,8 +183,6 @@ float4 Sepia_EnvironmentMapping_Pixel_Shader_ps_main(PS_INPUT input) : COLOR
 // Sepia
 //--------------------------------------------------------------//
 string Sepia_Sepia_ScreenAlignedQuad : ModelData = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Models\\ScreenAlignedQuad.3ds";
-
-float4x4 matViewProjection;
 
 struct Sepia_Sepia_Vertex_Shader_VS_INPUT 
 {

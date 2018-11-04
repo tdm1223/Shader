@@ -49,16 +49,11 @@ float4x4 lightViewMatrix
 > = float4x4( 1.00, 0.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 0.00, 1.00 );
 float4x4 lightProjectionMatrix : Projection;
 
-float4 worldLightPosition;
-
 VS_OUTPUT CreateShadow_CreateShadow_Vertex_Shader_vs_main(VS_INPUT input)
 {
    VS_OUTPUT output;
-   
-   //p…X X\€0 Ð-ð ‰,D ÌÜ” ü
    float4x4 lightViewMatrixTmp = lightViewMatrix;
    
-   //D <´õ -> ÔÜõ -> Ð-ð õ -> Ð-, õ<\ ÀX
    output.position = mul(input.position,worldMatrix);
    output.position = mul(output.position,lightViewMatrix);
    output.position = mul(output.position, lightProjectionMatrix);

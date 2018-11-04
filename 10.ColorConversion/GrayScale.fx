@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // EnvironmentMapping
 //--------------------------------------------------------------//
-string GrayScale_EnvironmentMapping_Model : ModelData = "..\\DxFramework\\Teapot.x";
+string GrayScale_EnvironmentMapping_Model : ModelData = ".\\TeapotWithTangent.x";
 
 texture SceneTexture_Tex : RenderColorTarget
 <
@@ -114,7 +114,7 @@ sampler2D diffuseSampler = sampler_state
 };
 texture specularMap_Tex
 <
-   string ResourceName = "..\\DxFramework\\Fieldstone_SM.tga";
+   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\fieldstone_SM.tga";
 >;
 sampler2D specularSampler = sampler_state
 {

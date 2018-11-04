@@ -20,7 +20,7 @@
 //--------------------------------------------------------------//
 // Pass 0
 //--------------------------------------------------------------//
-string EnvironmentMapping_Pass_0_Model : ModelData = "..\\DxFramework\\Teapot.x";
+string EnvironmentMapping_Pass_0_Model : ModelData = ".\\TeapotWithTangent.x";
 
 float4x4 worldMatrix : World;
 float4x4 worldViewProjectionMatrix : WorldViewProjection;
@@ -107,7 +107,7 @@ sampler2D diffuseSampler = sampler_state
 };
 texture specularMap_Tex
 <
-   string ResourceName = "..\\DxFramework\\Fieldstone_SM.tga";
+   string ResourceName = "..\\..\\..\\..\\..\\Program Files (x86)\\AMD\\RenderMonkey 1.82\\Examples\\Media\\Textures\\fieldstone_SM.tga";
 >;
 sampler2D specularSampler = sampler_state
 {
