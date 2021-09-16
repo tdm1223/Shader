@@ -1,32 +1,34 @@
-#pragma once
+ï»¿#pragma once
 
-#include <d3d9.h>
-#include <d3dx9.h>
+#include<d3d9.h>
+#include<d3dx9.h>
+#include<string>
 
-// ¼±¾ğ
-#define WIN_WIDTH		800
-#define WIN_HEIGHT		600
+//ì„ ì–¸
+constexpr int WIN_WIDTH = 800;
+constexpr int WIN_HEIGHT = 600;
 
-// ¸Ş½ÃÁö Ã³¸®±â °ü·Ã
-LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void ProcessInput(HWND hWnd, WPARAM keyPress);
+// ë©”ì‹œì§€ ì²˜ë¦¬ê¸° ê´€ë ¨
+LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+void ProcessInput(HWND hWnd, WPARAM keyPress) noexcept;
 
-// ÃÊ±âÈ­ °ú·Ã
+// ì´ˆê¸°í™” ê´€ë ¨
 bool InitEverything(HWND hWnd);
-bool InitD3D(HWND hWnd);
+bool InitD3D(HWND hWnd) noexcept;
 bool LoadAssets();
-LPD3DXEFFECT LoadShader(const char * filename);
-LPDIRECT3DTEXTURE9 LoadTexture(const char * filename);
-LPD3DXMESH LoadModel(const char * filename);
 
-// °ÔÀÓ·çÇÁ °ü·Ã
+LPD3DXEFFECT LoadShader(std::string filename);
+LPDIRECT3DTEXTURE9 LoadTexture(std::string filename) noexcept;
+LPD3DXMESH LoadModel(std::string filename) noexcept;
+
+// ê²Œì„ë£¨í”„ ê´€ë ¨
 void PlayDemo();
-void Update();
+void Update() noexcept;
 
-// ·»´õ¸µ °ü·Ã
+// ë Œë”ë§ ê´€ë ¨
 void RenderFrame();
 void RenderScene();
-void RenderInfo();
+void RenderInfo() noexcept;
 
-// ¸Ş¸ğ¸® ÇØÁ¦ °ü·Ã
-void Cleanup();
+// ë©”ëª¨ë¦¬ í•´ì œ ê´€ë ¨
+void Cleanup() noexcept;
