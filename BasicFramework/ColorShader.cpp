@@ -7,9 +7,8 @@
 constexpr float PI = 3.14159265f;
 constexpr int NEAR_PLANE = 1;
 constexpr int FAR_PLANE = 1000;
-
-#define FOV				(PI/4.0f)
-#define ASPECT_RATIO	(WIN_WIDTH/(float)WIN_HEIGHT)
+constexpr float FOV = PI / 4.0f;
+constexpr float ASPECT_RATIO = WIN_WIDTH / (float)WIN_HEIGHT;
 
 // D3D 관련
 LPDIRECT3D9 d3d = NULL;

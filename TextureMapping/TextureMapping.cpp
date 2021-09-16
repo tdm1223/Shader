@@ -1,404 +1,409 @@
-#include"TextureMapping.h"
+ï»¿#include"TextureMapping.h"
 #include<cstdio>
+#include<vector>
+#include<sstream>
 
-// Àü¿ªº¯¼ö
-#define PI				3.14159265f
-#define FOV				(PI/4.0f)
-#define ASPECT_RATIO	(WIN_WIDTH/(float)WIN_HEIGHT)
-#define NEAR_PLANE		1
-#define FAR_PLANE		10000
+// ì „ì—­ë³€ìˆ˜
+constexpr float PI = 3.14159265f;
+constexpr int NEAR_PLANE = 1;
+constexpr int FAR_PLANE = 1000;
+constexpr float FOV = PI / 4.0f;
+constexpr float ASPECT_RATIO = WIN_WIDTH / (float)WIN_HEIGHT;
 
-// È¸Àü°ª
-float					rotationY = 0.0f;
+// íšŒì „ê°’
+float rotationY = 0.0f;
 
-// D3D °ü·Ã
-LPDIRECT3D9             gpD3D = NULL;				// D3D
-LPDIRECT3DDEVICE9       gpD3DDevice = NULL;			// D3D ÀåÄ¡
+// D3D ê´€ë ¨
+LPDIRECT3D9 d3d = NULL;
+LPDIRECT3DDEVICE9 d3dDevice = NULL;
 
-//ÆùÆ®
-ID3DXFont*              font = NULL;
+// í°íŠ¸
+ID3DXFont* font = NULL;
 
-// ¸ðµ¨
-LPD3DXMESH				sphere = NULL;
+// ëª¨ë¸
+LPD3DXMESH sphere = NULL;
 
-// ¼ÎÀÌ´õ
-LPD3DXEFFECT			textureMappingShader = NULL;
+// ì…°ì´ë”
+LPD3DXEFFECT textureMappingShader = NULL;
 
-// ÅØ½ºÃ³
-LPDIRECT3DTEXTURE9		earthDM = NULL;
+// í…ìŠ¤ì²˜
+LPDIRECT3DTEXTURE9 earthDM = NULL;
 
-// ÇÁ·Î±×·¥ ÀÌ¸§
-const char*				gAppName = "ÅØ½ºÃ³ ¸ÊÇÎ ÇÁ·¹ÀÓ¿öÅ©";
+// ë¬¼ì²´ ìƒ‰ìƒ
+D3DXVECTOR4 objectColor(1.0f, 0.0f, 0.0f, 1);
 
-// ÁøÀÔÁ¡
+// í”„ë¡œê·¸ëž¨ ì´ë¦„
+std::string appName = "ì…°ì´ë” ë°ëª¨ í”„ë ˆìž„ì›Œí¬";
+
+// ì§„ìž…ì 
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
-	// À©µµ¿ì Å¬·¡½º¸¦ µî·ÏÇÑ´Ù.
-	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
-		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,gAppName, NULL };
-	RegisterClassEx(&wc);
+    // ìœˆë„ìš° í´ëž˜ìŠ¤ë¥¼ ë“±ë¡í•œë‹¤.
+    WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
+        GetModuleHandle(NULL), NULL, NULL, NULL, NULL, appName.c_str(), NULL };
+    RegisterClassEx(&wc);
 
-	// ÇÁ·Î±×·¥ Ã¢À» »ý¼ºÇÑ´Ù.
-	DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-	HWND hWnd = CreateWindow(gAppName, gAppName,style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
-		GetDesktopWindow(), NULL, wc.hInstance, NULL);
+    // í”„ë¡œê·¸ëž¨ ì°½ì„ ìƒì„±í•œë‹¤.
+    constexpr DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+    HWND hWnd = CreateWindow(appName.c_str(), appName.c_str(), style, CW_USEDEFAULT, 0, WIN_WIDTH, WIN_HEIGHT,
+        GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
-	// Client Rect Å©±â°¡ WIN_WIDTH, WIN_HEIGHT¿Í °°µµ·Ï Å©±â¸¦ Á¶Á¤ÇÑ´Ù.
-	POINT ptDiff;
-	RECT rcClient, rcWindow;
+    // Client Rect í¬ê¸°ê°€ WIN_WIDTH, WIN_HEIGHTì™€ ê°™ë„ë¡ í¬ê¸°ë¥¼ ì¡°ì •í•œë‹¤.
+    POINT ptDiff;
+    RECT rcClient, rcWindow;
 
-	GetClientRect(hWnd, &rcClient);
-	GetWindowRect(hWnd, &rcWindow);
-	ptDiff.x = (rcWindow.right - rcWindow.left) - rcClient.right;
-	ptDiff.y = (rcWindow.bottom - rcWindow.top) - rcClient.bottom;
-	MoveWindow(hWnd, rcWindow.left, rcWindow.top, WIN_WIDTH + ptDiff.x, WIN_HEIGHT + ptDiff.y, TRUE);
+    GetClientRect(hWnd, &rcClient);
+    GetWindowRect(hWnd, &rcWindow);
+    ptDiff.x = (rcWindow.right - rcWindow.left) - rcClient.right;
+    ptDiff.y = (rcWindow.bottom - rcWindow.top) - rcClient.bottom;
+    MoveWindow(hWnd, rcWindow.left, rcWindow.top, WIN_WIDTH + ptDiff.x, WIN_HEIGHT + ptDiff.y, TRUE);
 
-	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	UpdateWindow(hWnd);
+    ShowWindow(hWnd, SW_SHOWDEFAULT);
+    UpdateWindow(hWnd);
 
-	// D3D¸¦ ºñ·ÔÇÑ ¸ðµç °ÍÀ» ÃÊ±âÈ­ÇÑ´Ù.
-	if (!InitEverything(hWnd))
-	{
-		PostQuitMessage(1);
-	}
+    // D3Dë¥¼ ë¹„ë¡¯í•œ ëª¨ë“  ê²ƒì„ ì´ˆê¸°í™”í•œë‹¤.
+    if (!InitEverything(hWnd))
+    {
+        PostQuitMessage(1);
+    }
 
-	// ¸Þ½ÃÁö ·çÇÁ
-	MSG msg;
-	ZeroMemory(&msg, sizeof(msg));
-	while (msg.message != WM_QUIT)
-	{
-		if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else // ¸Þ½ÃÁö°¡ ¾øÀ¸¸é °ÔÀÓÀ» ¾÷µ¥ÀÌÆ®ÇÏ°í Àå¸éÀ» ±×¸°´Ù
-		{
-			PlayDemo();
-		}
-	}
+    // ë©”ì‹œì§€ ë£¨í”„
+    MSG msg;
+    ZeroMemory(&msg, sizeof(msg));
+    while (msg.message != WM_QUIT)
+    {
+        if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else // ë©”ì‹œì§€ê°€ ì—†ìœ¼ë©´ ì—…ë°ì´íŠ¸í•˜ê³  ìž¥ë©´ì„ ê·¸ë¦°ë‹¤
+        {
+            PlayDemo();
+        }
+    }
 
-	UnregisterClass(gAppName, wc.hInstance);
-	return 0;
+    UnregisterClass(appName.c_str(), wc.hInstance);
+    return 0;
 }
 
-// ¸Þ½ÃÁö Ã³¸®±â
-LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+// ë©”ì‹œì§€ ì²˜ë¦¬ê¸°
+LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
-	switch (msg)
-	{
-	case WM_KEYDOWN:
-		ProcessInput(hWnd, wParam);
-		break;
+    switch (msg)
+    {
+    case WM_KEYDOWN:
+        ProcessInput(hWnd, wParam);
+        break;
+    case WM_DESTROY:
+        Cleanup();
+        PostQuitMessage(0);
+        return 0;
+    default:
+        break;
+    }
 
-	case WM_DESTROY:
-		Cleanup();
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+    return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-// Å°º¸µå ÀÔ·ÂÃ³¸®
-void ProcessInput(HWND hWnd, WPARAM keyPress)
+// í‚¤ë³´ë“œ ìž…ë ¥ì²˜ë¦¬
+void ProcessInput(HWND hWnd, WPARAM keyPress) noexcept
 {
-	switch (keyPress)
-	{
-		// ESC Å°°¡ ´­¸®¸é ÇÁ·Î±×·¥À» Á¾·áÇÑ´Ù.
-	case VK_ESCAPE:
-		PostMessage(hWnd, WM_DESTROY, 0L, 0L);
-		break;
-	}
+    switch (keyPress)
+    {
+        // ESC í‚¤ê°€ ëˆŒë¦¬ë©´ í”„ë¡œê·¸ëž¨ì„ ì¢…ë£Œí•œë‹¤.
+    case VK_ESCAPE:
+        PostMessage(hWnd, WM_DESTROY, 0L, 0L);
+        break;
+    default:
+        break;
+    }
 }
 
-//°ÔÀÓ ·çÇÁ
+//ê²Œìž„ ë£¨í”„
 void PlayDemo()
 {
-	Update();
-	RenderFrame();
+    Update();
+    RenderFrame();
 }
 
-// °ÔÀÓ·ÎÁ÷ ¾÷µ¥ÀÌÆ®
-void Update()
+// ê²Œìž„ë¡œì§ ì—…ë°ì´íŠ¸
+void Update() noexcept
 {
 }
 
-//·»´õ¸µ
+//ë Œë”ë§
 void RenderFrame()
 {
-	D3DCOLOR bgColour = 0xFF0000FF;	// ¹è°æ»ö»ó - ÆÄ¶û
+    constexpr D3DCOLOR bgColour = 0xFF0000FF;	// ë°°ê²½ìƒ‰ìƒ - íŒŒëž‘
 
-	gpD3DDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
+    d3dDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
 
-	gpD3DDevice->BeginScene();
-	{
-		RenderScene();				// 3D ¹°Ã¼µîÀ» ±×¸°´Ù.
-		RenderInfo();				// µð¹ö±× Á¤º¸ µîÀ» Ãâ·ÂÇÑ´Ù.
-	}
-	gpD3DDevice->EndScene();
+    d3dDevice->BeginScene();
+    {
+        RenderScene(); // 3D ë¬¼ì²´ë¥¼ ê·¸ë¦°ë‹¤.
+        RenderInfo(); // ë””ë²„ê·¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+    }
+    d3dDevice->EndScene();
 
-	gpD3DDevice->Present(NULL, NULL, NULL, NULL);
+    d3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
-// 3D ¹°Ã¼µîÀ» ±×¸°´Ù.
+
+// 3D ë¬¼ì²´ë¥¼ ê·¸ë¦°ë‹¤.
 void RenderScene()
 {
-	// ÇÁ·¹ÀÓ¸¶´Ù 0.4µµ¾¿ È¸ÀüÀ» ½ÃÅ²´Ù.
-	rotationY -= 0.4f * PI / 180.0f;
-	if (rotationY > 2 * PI)
-	{
-		rotationY -= 2 * PI;
-	}
+    // í”„ë ˆìž„ë§ˆë‹¤ 0.4ë„ì”© íšŒì „ì„ ì‹œí‚¨ë‹¤.
+    rotationY -= 0.4f * PI / 180.0f;
+    if (rotationY > 2 * PI)
+    {
+        rotationY -= 2 * PI;
+    }
 
-	// ¿ùµåÇà·ÄÀ» ¸¸µç´Ù.
-	D3DXMATRIXA16			worldMatrix;
-	D3DXMatrixRotationY(&worldMatrix, rotationY);
+    // ì›”ë“œí–‰ë ¬ì„ ë§Œë“ ë‹¤.
+    D3DXMATRIXA16			worldMatrix;
+    D3DXMatrixRotationY(&worldMatrix, rotationY);
 
-	// ºä Çà·ÄÀ» ¸¸µç´Ù.
-	D3DXMATRIXA16			viewMatrix;
-	D3DXVECTOR3 eye(0.0f, 0.0f, -200.0f);
-	D3DXVECTOR3 lookAt(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-	D3DXMatrixLookAtLH(&viewMatrix, &eye, &lookAt, &up);
+    // ë·° í–‰ë ¬ì„ ë§Œë“ ë‹¤.
+    D3DXMATRIXA16			viewMatrix;
+    const D3DXVECTOR3 eye(0.0f, 0.0f, -200.0f);
+    const D3DXVECTOR3 lookAt(0.0f, 0.0f, 0.0f);
+    const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+    D3DXMatrixLookAtLH(&viewMatrix, &eye, &lookAt, &up);
 
-	// Åõ¿µÇà·ÄÀ» ¸¸µç´Ù.
-	D3DXMATRIXA16			projectionMatrix;
-	D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
+    // íˆ¬ì˜í–‰ë ¬ì„ ë§Œë“ ë‹¤.
+    D3DXMATRIXA16			projectionMatrix;
+    D3DXMatrixPerspectiveFovLH(&projectionMatrix, FOV, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
 
-	//¿ùµå-ºä-Åõ¿µÇà·ÄÀ» ¸¸µç´Ù.
-	D3DXMATRIXA16 worldViewMatrix;
-	D3DXMatrixMultiply(&worldViewMatrix, &worldMatrix, &viewMatrix);
-	D3DXMATRIXA16 worldViewProjectionMatrix;
-	D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
+    //ì›”ë“œ-ë·°-íˆ¬ì˜í–‰ë ¬ì„ ë§Œë“ ë‹¤.
+    D3DXMATRIXA16 worldViewMatrix;
+    D3DXMatrixMultiply(&worldViewMatrix, &worldMatrix, &viewMatrix);
+    D3DXMATRIXA16 worldViewProjectionMatrix;
+    D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
 
-	// ¼ÎÀÌ´õ Àü¿ªº¯¼öµéÀ» ¼³Á¤
-	textureMappingShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
-	textureMappingShader->SetTexture("diffuseSampler_Tex", earthDM);
+    // ì…°ì´ë” ì „ì—­ë³€ìˆ˜ë“¤ì„ ì„¤ì •
+    textureMappingShader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
+    textureMappingShader->SetTexture("diffuseSampler_Tex", earthDM);
 
-	UINT numPasses = 0;
-	textureMappingShader->Begin(&numPasses, NULL);
-	{
-		for (UINT i = 0; i < numPasses; i++)
-		{
-			textureMappingShader->BeginPass(i);
-			{
-				sphere->DrawSubset(0);
-			}
-			textureMappingShader->EndPass();
-		}
-	}
-	textureMappingShader->End();
+    UINT numPasses = 0;
+    textureMappingShader->Begin(&numPasses, NULL);
+    {
+        for (UINT i = 0; i < numPasses; i++)
+        {
+            textureMappingShader->BeginPass(i);
+            {
+                sphere->DrawSubset(0);
+            }
+            textureMappingShader->EndPass();
+        }
+    }
+    textureMappingShader->End();
 }
 
-// µð¹ö±× Á¤º¸ µîÀ» Ãâ·Â.
-void RenderInfo()
+// ë””ë²„ê·¸ ì •ë³´ë¥¼ ì¶œë ¥.
+void RenderInfo() noexcept
 {
-	// ÅØ½ºÆ® »ö»ó
-	D3DCOLOR fontColor = D3DCOLOR_ARGB(255, 255, 255, 255);
+    // í…ìŠ¤íŠ¸ ìƒ‰ìƒ
+    constexpr D3DCOLOR fontColor = D3DCOLOR_ARGB(255, 255, 255, 255);
 
-	// ÅØ½ºÆ®¸¦ Ãâ·ÂÇÒ À§Ä¡
-	RECT rct;
-	rct.left = 5;
-	rct.right = WIN_WIDTH / 3;
-	rct.top = 5;
-	rct.bottom = WIN_HEIGHT / 3;
+    // í…ìŠ¤íŠ¸ë¥¼ ì¶œë ¥í•  ìœ„ì¹˜
+    RECT rct;
+    rct.left = 5;
+    rct.right = WIN_WIDTH / 3;
+    rct.top = 5;
+    rct.bottom = WIN_HEIGHT / 3;
 
-	// Å° ÀÔ·Â Á¤º¸¸¦ Ãâ·Â
-	font->DrawText(NULL, "µ¥¸ð ÇÁ·¹ÀÓ¿öÅ©\n\nESC: µ¥¸ðÁ¾·á", -1, &rct, 0, fontColor);
+    // í‚¤ ìž…ë ¥ ì •ë³´ë¥¼ ì¶œë ¥
+    font->DrawText(NULL, "ë°ëª¨ í”„ë ˆìž„ì›Œí¬\n\nESC: ë°ëª¨ì¢…ë£Œ", -1, &rct, 0, fontColor);
 }
 
-//ÃÊ±âÈ­ ÄÚµå
+//ì´ˆê¸°í™” ì½”ë“œ
 bool InitEverything(HWND hWnd)
 {
-	// D3D¸¦ ÃÊ±âÈ­
-	if (!InitD3D(hWnd))
-	{
-		return false;
-	}
+    // D3Dë¥¼ ì´ˆê¸°í™”
+    if (!InitD3D(hWnd))
+    {
+        return false;
+    }
 
-	// ¸ðµ¨, ¼ÎÀÌ´õ, ÅØ½ºÃ³µîÀ» ·Îµù
-	if (!LoadAssets())
-	{
-		return false;
-	}
+    // ëª¨ë¸, ì…°ì´ë”, í…ìŠ¤ì²˜ë“±ì„ ë¡œë”©
+    if (!LoadAssets())
+    {
+        return false;
+    }
 
-	// ÆùÆ®¸¦ ·Îµù
-	if (FAILED(D3DXCreateFont(gpD3DDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE),"Arial", &font)))
-	{
-		return false;
-	}
+    // í°íŠ¸ë¥¼ ë¡œë”©
+    if (FAILED(D3DXCreateFont(d3dDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+        OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE), "Arial", &font)))
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
-// D3D °´Ã¼ ¹× ÀåÄ¡ ÃÊ±âÈ­
-bool InitD3D(HWND hWnd)
+// D3D ê°ì²´ ë° ìž¥ì¹˜ ì´ˆê¸°í™”
+bool InitD3D(HWND hWnd) noexcept
 {
-	// D3D °´Ã¼
-	gpD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!gpD3D)
-	{
-		return false;
-	}
+    // D3D ê°ì²´
+    d3d = Direct3DCreate9(D3D_SDK_VERSION);
+    if (!d3d)
+    {
+        return false;
+    }
 
-	// D3DÀåÄ¡¸¦ »ý¼ºÇÏ´Âµ¥ ÇÊ¿äÇÑ ±¸Á¶Ã¼¸¦ Ã¤¿ö³Ö´Â´Ù.
-	D3DPRESENT_PARAMETERS d3dpp;
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
+    // D3Dìž¥ì¹˜ë¥¼ ìƒì„±í•˜ëŠ”ë° í•„ìš”í•œ êµ¬ì¡°ì²´ë¥¼ ì±„ì›Œë„£ëŠ”ë‹¤.
+    D3DPRESENT_PARAMETERS d3dpp;
+    ZeroMemory(&d3dpp, sizeof(d3dpp));
 
-	d3dpp.BackBufferWidth = WIN_WIDTH;
-	d3dpp.BackBufferHeight = WIN_HEIGHT;
-	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
-	d3dpp.BackBufferCount = 1;
-	d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
-	d3dpp.MultiSampleQuality = 0;
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.hDeviceWindow = hWnd;
-	d3dpp.Windowed = TRUE;
-	d3dpp.EnableAutoDepthStencil = TRUE;
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D24X8;
-	d3dpp.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL;
-	d3dpp.FullScreen_RefreshRateInHz = 0;
-	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+    d3dpp.BackBufferWidth = WIN_WIDTH;
+    d3dpp.BackBufferHeight = WIN_HEIGHT;
+    d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
+    d3dpp.BackBufferCount = 1;
+    d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
+    d3dpp.MultiSampleQuality = 0;
+    d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    d3dpp.hDeviceWindow = hWnd;
+    d3dpp.Windowed = TRUE;
+    d3dpp.EnableAutoDepthStencil = TRUE;
+    d3dpp.AutoDepthStencilFormat = D3DFMT_D24X8;
+    d3dpp.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL;
+    d3dpp.FullScreen_RefreshRateInHz = 0;
+    d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 
-	// D3DÀåÄ¡¸¦ »ý¼ºÇÑ´Ù.
-	if (FAILED(gpD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &gpD3DDevice)))
-	{
-		return false;
-	}
+    // D3Dìž¥ì¹˜ë¥¼ ìƒì„±í•œë‹¤.
+    if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+        D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3dDevice)))
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 bool LoadAssets()
 {
-	// ÅØ½ºÃ³ ·Îµù
-	earthDM = LoadTexture("Earth.jpg");
-	if (!earthDM)
-	{
-		return false;
-	}
+    // í…ìŠ¤ì²˜ ë¡œë”©
+    earthDM = LoadTexture("Earth.jpg");
+    if (!earthDM)
+    {
+        return false;
+    }
 
-	// ¼ÎÀÌ´õ ·Îµù
-	textureMappingShader = LoadShader("TextureMapping.fx");
-	if (!textureMappingShader)
-	{
-		return false;
-	}
+    // ì…°ì´ë” ë¡œë”©
+    textureMappingShader = LoadShader("TextureMapping.fx");
+    if (!textureMappingShader)
+    {
+        return false;
+    }
 
-	// ¸ðµ¨ ·Îµù
-	sphere = LoadModel("sphere.x");
-	if (!sphere)
-	{
-		return false;
-	}
-	return true;
+    // ëª¨ë¸ ë¡œë”©
+    sphere = LoadModel("sphere.x");
+    if (!sphere)
+    {
+        return false;
+    }
+    return true;
 }
 
-// ¼ÎÀÌ´õ ·Îµù
-LPD3DXEFFECT LoadShader(const char * filename)
+// ì…°ì´ë” ë¡œë”©
+LPD3DXEFFECT LoadShader(std::string filename)
 {
-	LPD3DXEFFECT ret = NULL;
-
-	LPD3DXBUFFER pError = NULL;
-	DWORD dwShaderFlags = 0;
+    LPD3DXEFFECT ret = NULL;
+    LPD3DXBUFFER pError = NULL;
+    DWORD dwShaderFlags = 0;
 
 #if _DEBUG
-	dwShaderFlags |= D3DXSHADER_DEBUG;
+    dwShaderFlags |= D3DXSHADER_DEBUG;
 #endif
 
-	D3DXCreateEffectFromFile(gpD3DDevice, filename, NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
+    D3DXCreateEffectFromFile(d3dDevice, filename.c_str(), NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
-	// ¼ÎÀÌ´õ ·Îµù¿¡ ½ÇÆÐÇÑ °æ¿ì outputÃ¢¿¡ ¼ÎÀÌ´õ ÄÄÆÄÀÏ ¿¡·¯¸¦ Ãâ·ÂÇÑ´Ù.
-	if (!ret && pError)
-	{
-		int size = pError->GetBufferSize();
-		void *ack = pError->GetBufferPointer();
+    // ì…°ì´ë” ë¡œë”©ì— ì‹¤íŒ¨í•œ ê²½ìš° outputì°½ì— ì…°ì´ë” ì»´íŒŒì¼ ì—ëŸ¬ë¥¼ ì¶œë ¥í•œë‹¤.
+    if (!ret && pError)
+    {
+        const int size = pError->GetBufferSize();
+        void* ack = pError->GetBufferPointer();
 
-		if (ack)
-		{
-			char* str = new char[size];
-			sprintf(str, (const char*)ack, size);
-			OutputDebugString(str);
-			delete[] str;
-		}
-	}
+        if (ack)
+        {
+            std::stringstream  out;
+            out << ack;
+            OutputDebugString(out.str().c_str());
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
-// ¸ðµ¨ ·Îµù
-LPD3DXMESH LoadModel(const char * filename)
+// ëª¨ë¸ ë¡œë”©
+LPD3DXMESH LoadModel(std::string filename) noexcept
 {
-	LPD3DXMESH ret = NULL;
-	if (FAILED(D3DXLoadMeshFromX(filename, D3DXMESH_SYSTEMMEM, gpD3DDevice, NULL, NULL, NULL, NULL, &ret)))
-	{
-		OutputDebugString("¸ðµ¨ ·Îµù ½ÇÆÐ: ");
-		OutputDebugString(filename);
-		OutputDebugString("\n");
-	};
+    LPD3DXMESH ret = NULL;
+    if (FAILED(D3DXLoadMeshFromX(filename.c_str(), D3DXMESH_SYSTEMMEM, d3dDevice, NULL, NULL, NULL, NULL, &ret)))
+    {
+        OutputDebugString("ëª¨ë¸ ë¡œë”© ì‹¤íŒ¨: ");
+        OutputDebugString(filename.c_str());
+        OutputDebugString("\n");
+    };
 
-	return ret;
+    return ret;
 }
 
-// ÅØ½ºÃ³ ·Îµù
-LPDIRECT3DTEXTURE9 LoadTexture(const char * filename)
+// í…ìŠ¤ì²˜ ë¡œë”©
+LPDIRECT3DTEXTURE9 LoadTexture(std::string filename) noexcept
 {
-	LPDIRECT3DTEXTURE9 ret = NULL;
-	if (FAILED(D3DXCreateTextureFromFile(gpD3DDevice, filename, &ret)))
-	{
-		OutputDebugString("ÅØ½ºÃ³ ·Îµù ½ÇÆÐ: ");
-		OutputDebugString(filename);
-		OutputDebugString("\n");
-	}
+    LPDIRECT3DTEXTURE9 ret = NULL;
+    if (FAILED(D3DXCreateTextureFromFile(d3dDevice, filename.c_str(), &ret)))
+    {
+        OutputDebugString("í…ìŠ¤ì²˜ ë¡œë”© ì‹¤íŒ¨: ");
+        OutputDebugString(filename.c_str());
+        OutputDebugString("\n");
+    }
 
-	return ret;
+    return ret;
 }
 
-//¸Þ¸ð¸® ÇØÁ¦ ÄÚµå
-void Cleanup()
+//ë©”ëª¨ë¦¬ í•´ì œ ì½”ë“œ
+void Cleanup() noexcept
 {
-	// ÆùÆ®¸¦ release ÇÑ´Ù.
-	if (font)
-	{
-		font->Release();
-		font = NULL;
-	}
+    // í°íŠ¸ë¥¼ release í•œë‹¤.
+    if (font)
+    {
+        font->Release();
+        font = NULL;
+    }
 
-	// ¸ðµ¨À» release ÇÑ´Ù.
-	if (sphere)
-	{
-		sphere->Release();
-		sphere = NULL;
-	}
+    // ëª¨ë¸ì„ release í•œë‹¤.
+    if (sphere)
+    {
+        sphere->Release();
+        sphere = NULL;
+    }
 
-	// ¼ÎÀÌ´õ¸¦ release ÇÑ´Ù.
-	if (textureMappingShader)
-	{
-		textureMappingShader->Release();
-		textureMappingShader = NULL;
-	}
+    // ì…°ì´ë”ë¥¼ release í•œë‹¤.
+    if (textureMappingShader)
+    {
+        textureMappingShader->Release();
+        textureMappingShader = NULL;
+    }
 
-	// ÅØ½ºÃ³¸¦ release ÇÑ´Ù.
-	if (earthDM)
-	{
-		earthDM->Release();
-		earthDM = NULL;
-	}
+    // í…ìŠ¤ì²˜ë¥¼ release í•œë‹¤.
+    if (earthDM)
+    {
+        earthDM->Release();
+        earthDM = NULL;
+    }
 
-	// D3D¸¦ release ÇÑ´Ù.
-	if (gpD3DDevice)
-	{
-		gpD3DDevice->Release();
-		gpD3DDevice = NULL;
-	}
-	if (gpD3D)
-	{
-		gpD3D->Release();
-		gpD3D = NULL;
-	}
+    // D3Dë¥¼ release í•œë‹¤.
+    if (d3dDevice)
+    {
+        d3dDevice->Release();
+        d3dDevice = NULL;
+    }
+    if (d3d)
+    {
+        d3d->Release();
+        d3d = NULL;
+    }
 }
-
