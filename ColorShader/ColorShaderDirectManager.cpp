@@ -1,4 +1,4 @@
-#include "ColorShaderDirectManager.h"
+ï»¿#include "ColorShaderDirectManager.h"
 
 ColorShaderDirectManager::ColorShaderDirectManager(D3DXVECTOR4 d3dvector) noexcept
 {
@@ -7,28 +7,28 @@ ColorShaderDirectManager::ColorShaderDirectManager(D3DXVECTOR4 d3dvector) noexce
 
 void ColorShaderDirectManager::RenderScene()
 {
-    // ¿ùµå Çà·Ä
+    // ì›”ë“œ í–‰ë ¬
     D3DXMATRIXA16 worldMatrix;
     D3DXMatrixIdentity(&worldMatrix);
 
-    // ºä Çà·Ä
+    // ë·° í–‰ë ¬
     D3DXMATRIXA16 viewMatrix;
     const D3DXVECTOR3 eye(0.0f, 0.0f, -200.0f);
     const D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
     const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
     D3DXMatrixLookAtLH(&viewMatrix, &eye, &at, &up);
 
-    // Åõ¿µ Çà·Ä
+    // íˆ¬ì˜ í–‰ë ¬
     D3DXMATRIXA16 projectionMatrix;
     D3DXMatrixPerspectiveFovLH(&projectionMatrix, Util::FOV, Util::ASPECT_RATIO, Util::NEAR_PLANE, Util::FAR_PLANE);
 
-    // À§ÀÇ ¼ÂÀ» °öÇØ¼­ ¿ùµå-ºä-Åõ¿µ Çà·ÄÀ» ¸¸µê.
+    // ìœ„ì˜ ì…‹ì„ ê³±í•´ì„œ ì›”ë“œ-ë·°-íˆ¬ì˜ í–‰ë ¬ì„ ë§Œë“¦.
     D3DXMATRIXA16 worldViewMatrix;
     D3DXMATRIXA16 worldViewProjectionMatrix;
     D3DXMatrixMultiply(&worldViewMatrix, &worldMatrix, &viewMatrix);
     D3DXMatrixMultiply(&worldViewProjectionMatrix, &worldViewMatrix, &projectionMatrix);
 
-    // ¼ÎÀÌ´õÀÇ Àü¿ªº¯¼ö ¼³Á¤
+    // ì…°ì´ë”ì˜ ì „ì—­ë³€ìˆ˜ ì„¤ì •
     shader->SetMatrix("worldViewProjectionMatrix", &worldViewProjectionMatrix);
     shader->SetVector("objectColor", &objectColor);
 

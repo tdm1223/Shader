@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "DirectManager.h"
 class ColorShaderDirectManager : public DirectManager
 {
