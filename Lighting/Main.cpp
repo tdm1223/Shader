@@ -1,9 +1,9 @@
-﻿#include"TextureMappingDirectManager.h"
+﻿#include"LightingManager.h"
 #include<memory>
 #include<stdexcept>
 
 // D3D 관련
-std::unique_ptr<TextureMappingDirectManager> gManager;
+std::unique_ptr<LightingManager> gManager;
 
 // 키보드 입력처리
 void ProcessInput(HWND hWnd, WPARAM keyPress) noexcept
@@ -43,7 +43,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
     // 프로그램 이름
     std::string appName = "Color Shader";
 
-    gManager = std::make_unique<TextureMappingDirectManager>();
+    gManager = std::make_unique<LightingManager>();
 
     // 윈도우 클래스를 등록한다.
     WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
@@ -69,7 +69,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
     UpdateWindow(hWnd);
 
     // Init시 shader, model 등에 대한 정보를 전달해준다.
-    if (!gManager->Init(hWnd, "TextureMapping.fx", "sphere.x", "Earth.jpg"))
+    if (!gManager->Init(hWnd, "Lighting.fx", "sphere.x", ""))
     {
         PostQuitMessage(1);
     }
@@ -86,7 +86,31 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
         }
         else // 메시지가 없으면 업데이트하고 장면을 그린다
         {
-            gManager->RenderFrame(Util::string_format("데모 프레임워크\n\nESC: 데모종료"));
+            gManager->RenderFrame(Util::string_format("ESC: 데모종료\nPow : %.1f\nW,A,S,D로 빛의 위치 조절"));
+            if (GetAsyncKeyState('Q') < 0)
+            {
+                gManager->Pow -= 1.0f;
+            }
+            if (GetAsyncKeyState('E') < 0)
+            {
+                gManager->Pow += 1.0f;
+            }
+            if (GetAsyncKeyState('S') < 0)
+            {
+                gManager->worldLightPosition.x += 10.0f;
+            }
+            if (GetAsyncKeyState('W') < 0)
+            {
+                gManager->worldLightPosition.x -= 10.0f;
+            }
+            if (GetAsyncKeyState('D') < 0)
+            {
+                gManager->worldLightPosition.z += 10.0f;
+            }
+            if (GetAsyncKeyState('A') < 0)
+            {
+                gManager->worldLightPosition.z -= 10.0f;
+            }
         }
     }
 
