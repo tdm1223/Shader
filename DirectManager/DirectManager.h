@@ -1,4 +1,4 @@
-#include<d3d9.h>
+ï»¿#include<d3d9.h>
 #include<d3dx9.h>
 #include<string>
 
@@ -30,36 +30,36 @@ public:
     DirectManager() noexcept = default;
     virtual ~DirectManager() noexcept = default;
 
-    // Direct9 ÀåÄ¡
+    // Direct9 ì¥ì¹˜
     LPDIRECT3D9 d3d = nullptr;
     LPDIRECT3DDEVICE9 d3dDevice = nullptr;
 
-    // ¼ÎÀÌ´õ
+    // ì…°ì´ë”
     LPD3DXEFFECT shader = nullptr;
 
-    // ¹°Ã¼ »ö»ó
+    // ë¬¼ì²´ ìƒ‰ìƒ
     D3DXVECTOR4 objectColor;
 
-    // ÆùÆ®
+    // í°íŠ¸
     ID3DXFont* font = nullptr;
 
-    // ¸ğµ¨
+    // ëª¨ë¸
     LPD3DXMESH model = nullptr;
 
-    // ÅØ½ºÃ³
+    // í…ìŠ¤ì²˜
     LPDIRECT3DTEXTURE9 texture = NULL;
 
-    // ÃÊ±âÈ­ ÇÔ¼ö
+    // ì´ˆê¸°í™” í•¨ìˆ˜
     bool Init(HWND hWnd, std::string shaderName = "", std::string modelName = "", std::string textureName = "");
     bool InitD3D(HWND hWnd) noexcept;
 
-    // ·Îµù °ü·Ã ÇÔ¼ö
+    // ë¡œë”© ê´€ë ¨ í•¨ìˆ˜
     bool LoadAssets(std::string shaderName = "", std::string modelName = "", std::string textureName = "");
     LPD3DXEFFECT LoadShader(std::string filename);
     LPD3DXMESH LoadModel(std::string filename) noexcept;
     LPDIRECT3DTEXTURE9 LoadTexture(std::string filename) noexcept;
 
-    // ·»´õ¸µ °ü·Ã ÇÔ¼ö
+    // ë Œë”ë§ ê´€ë ¨ í•¨ìˆ˜
     void RenderFrame(std::string str);
     void RenderInfo(std::string str) noexcept;
     virtual void RenderScene() = 0;

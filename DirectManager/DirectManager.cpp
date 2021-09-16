@@ -1,7 +1,7 @@
-#include"DirectManager.h"
+ï»¿#include"DirectManager.h"
 #include<sstream>
 
-// D3D °´Ã¼ ¹× ÀåÄ¡ ÃÊ±âÈ­
+// D3D ê°ì²´ ë° ì¥ì¹˜ ì´ˆê¸°í™”
 bool DirectManager::InitD3D(HWND hWnd) noexcept
 {
     d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -10,7 +10,7 @@ bool DirectManager::InitD3D(HWND hWnd) noexcept
         return false;
     }
 
-    // D3DÀåÄ¡¸¦ »ı¼ºÇÏ´Âµ¥ ÇÊ¿äÇÑ ±¸Á¶Ã¼¸¦ Ã¤¿ö³Ö´Â´Ù.
+    // D3Dì¥ì¹˜ë¥¼ ìƒì„±í•˜ëŠ”ë° í•„ìš”í•œ êµ¬ì¡°ì²´ë¥¼ ì±„ì›Œë„£ëŠ”ë‹¤.
     D3DPRESENT_PARAMETERS d3dpp;
     ZeroMemory(&d3dpp, sizeof(d3dpp));
 
@@ -29,7 +29,7 @@ bool DirectManager::InitD3D(HWND hWnd) noexcept
     d3dpp.FullScreen_RefreshRateInHz = 0;
     d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 
-    // D3DÀåÄ¡¸¦ »ı¼ºÇÑ´Ù.
+    // D3Dì¥ì¹˜ë¥¼ ìƒì„±í•œë‹¤.
     if (FAILED(d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
         D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &d3dDevice)))
     {
@@ -41,24 +41,40 @@ bool DirectManager::InitD3D(HWND hWnd) noexcept
 
 bool DirectManager::LoadAssets(std::string shaderName, std::string modelName, std::string textureName)
 {
-    // ¼ÎÀÌ´õ ·Îµù
-    shader = LoadShader(shaderName);
-    if (!shader)
+    // í…ìŠ¤ì²˜ ë¡œë”©
+    if (!textureName.empty())
     {
-        return false;
+        texture = LoadTexture(textureName);
+        if (!texture)
+        {
+            return false;
+        }
     }
 
-    // ¸ğµ¨ ·Îµù
-    model = LoadModel(modelName);
-    if (!model)
+    // ì…°ì´ë” ë¡œë”©
+    if (!shaderName.empty())
     {
-        return false;
+        shader = LoadShader(shaderName);
+        if (!shader)
+        {
+            return false;
+        }
+    }
+
+    // ëª¨ë¸ ë¡œë”©
+    if (!modelName.empty())
+    {
+        model = LoadModel(modelName);
+        if (!model)
+        {
+            return false;
+        }
     }
 
     return true;
 }
 
-// ¼ÎÀÌ´õ ·Îµù
+// ì…°ì´ë” ë¡œë”©
 LPD3DXEFFECT DirectManager::LoadShader(std::string filename)
 {
     LPD3DXEFFECT ret = NULL;
@@ -71,7 +87,7 @@ LPD3DXEFFECT DirectManager::LoadShader(std::string filename)
 
     D3DXCreateEffectFromFile(d3dDevice, filename.c_str(), NULL, NULL, dwShaderFlags, NULL, &ret, &pError);
 
-    // ¼ÎÀÌ´õ ·Îµù¿¡ ½ÇÆĞÇÑ °æ¿ì outputÃ¢¿¡ ¼ÎÀÌ´õ ÄÄÆÄÀÏ ¿¡·¯¸¦ Ãâ·ÂÇÑ´Ù.
+    // ì…°ì´ë” ë¡œë”©ì— ì‹¤íŒ¨í•œ ê²½ìš° outputì°½ì— ì…°ì´ë” ì»´íŒŒì¼ ì—ëŸ¬ë¥¼ ì¶œë ¥í•œë‹¤.
     if (!ret && pError)
     {
         const int size = pError->GetBufferSize();
@@ -88,13 +104,13 @@ LPD3DXEFFECT DirectManager::LoadShader(std::string filename)
     return ret;
 }
 
-// ¸ğµ¨ ·Îµù
+// ëª¨ë¸ ë¡œë”©
 LPD3DXMESH DirectManager::LoadModel(std::string filename) noexcept
 {
     LPD3DXMESH ret = NULL;
     if (FAILED(D3DXLoadMeshFromX(filename.c_str(), D3DXMESH_SYSTEMMEM, d3dDevice, NULL, NULL, NULL, NULL, &ret)))
     {
-        OutputDebugString("¸ğµ¨ ·Îµù ½ÇÆĞ: ");
+        OutputDebugString("ëª¨ë¸ ë¡œë”© ì‹¤íŒ¨: ");
         OutputDebugString(filename.c_str());
         OutputDebugString("\n");
     };
@@ -102,13 +118,13 @@ LPD3DXMESH DirectManager::LoadModel(std::string filename) noexcept
     return ret;
 }
 
-// ÅØ½ºÃ³ ·Îµù
+// í…ìŠ¤ì²˜ ë¡œë”©
 LPDIRECT3DTEXTURE9 DirectManager::LoadTexture(std::string filename) noexcept
 {
     LPDIRECT3DTEXTURE9 ret = NULL;
     if (FAILED(D3DXCreateTextureFromFile(d3dDevice, filename.c_str(), &ret)))
     {
-        OutputDebugString("ÅØ½ºÃ³ ·Îµù ½ÇÆĞ: ");
+        OutputDebugString("í…ìŠ¤ì²˜ ë¡œë”© ì‹¤íŒ¨: ");
         OutputDebugString(filename.c_str());
         OutputDebugString("\n");
     }
@@ -116,56 +132,56 @@ LPDIRECT3DTEXTURE9 DirectManager::LoadTexture(std::string filename) noexcept
     return ret;
 }
 
-// µğ¹ö±× Á¤º¸¸¦ Ãâ·Â.
+// ë””ë²„ê·¸ ì •ë³´ë¥¼ ì¶œë ¥.
 void DirectManager::RenderInfo(std::string str) noexcept
 {
-    // ÅØ½ºÆ® »ö»ó
+    // í…ìŠ¤íŠ¸ ìƒ‰ìƒ
     constexpr D3DCOLOR fontColor = D3DCOLOR_ARGB(255, 255, 255, 255);
 
-    // ÅØ½ºÆ®¸¦ Ãâ·ÂÇÒ À§Ä¡
+    // í…ìŠ¤íŠ¸ë¥¼ ì¶œë ¥í•  ìœ„ì¹˜
     RECT rct;
     rct.left = 5;
     rct.right = Util::WIN_WIDTH / 3;
     rct.top = 5;
     rct.bottom = Util::WIN_HEIGHT / 3;
 
-    // ÅØ½ºÆ® Ãâ·Â
+    // í…ìŠ¤íŠ¸ ì¶œë ¥
     font->DrawText(NULL, str.c_str(), -1, &rct, 0, fontColor);
 }
 
-//·»´õ¸µ
+//ë Œë”ë§
 void DirectManager::RenderFrame(std::string str)
 {
-    constexpr D3DCOLOR bgColour = 0xFF0000FF;	// ¹è°æ»ö»ó - ÆÄ¶û
+    constexpr D3DCOLOR bgColour = 0xFF0000FF;	// ë°°ê²½ìƒ‰ìƒ - íŒŒë‘
 
     d3dDevice->Clear(0, NULL, (D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER), bgColour, 1.0f, 0);
 
     d3dDevice->BeginScene();
     {
-        RenderScene(); // 3D ¹°Ã¼¸¦ ±×¸°´Ù.
-        RenderInfo(str); // µğ¹ö±× Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
+        RenderScene(); // 3D ë¬¼ì²´ë¥¼ ê·¸ë¦°ë‹¤.
+        RenderInfo(str); // ë””ë²„ê·¸ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
     }
     d3dDevice->EndScene();
 
     d3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
-//ÃÊ±âÈ­ ÄÚµå
+//ì´ˆê¸°í™” ì½”ë“œ
 bool DirectManager::Init(HWND hWnd, std::string shaderName, std::string modelName, std::string textureName)
 {
-    // D3D¸¦ ÃÊ±âÈ­
+    // D3Dë¥¼ ì´ˆê¸°í™”
     if (!InitD3D(hWnd))
     {
         return false;
     }
 
-    // ¸ğµ¨, ¼ÎÀÌ´õ, ÅØ½ºÃ³µîÀ» ·Îµù
+    // ëª¨ë¸, ì…°ì´ë”, í…ìŠ¤ì²˜ë“±ì„ ë¡œë”©
     if (!LoadAssets(shaderName, modelName, textureName))
     {
         return false;
     }
 
-    // ÆùÆ®¸¦ ·Îµù
+    // í°íŠ¸ë¥¼ ë¡œë”©
     if (FAILED(D3DXCreateFont(d3dDevice, 20, 10, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
         OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE), "Arial", &font)))
     {
