@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpecularMapping", "Specular
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ToonShader", "ToonShader\ToonShader.vcxproj", "{2F25AC3B-A70D-4F2B-BFBD-AD2974109F4F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NormalMapping", "NormalMapping\NormalMapping.vcxproj", "{F1950589-C146-4E80-89AF-7771FD46B013}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,12 @@ Global
 		{2F25AC3B-A70D-4F2B-BFBD-AD2974109F4F}.Release|x64.ActiveCfg = Release|Win32
 		{2F25AC3B-A70D-4F2B-BFBD-AD2974109F4F}.Release|x86.ActiveCfg = Release|Win32
 		{2F25AC3B-A70D-4F2B-BFBD-AD2974109F4F}.Release|x86.Build.0 = Release|Win32
+		{F1950589-C146-4E80-89AF-7771FD46B013}.Debug|x64.ActiveCfg = Debug|Win32
+		{F1950589-C146-4E80-89AF-7771FD46B013}.Debug|x86.ActiveCfg = Debug|Win32
+		{F1950589-C146-4E80-89AF-7771FD46B013}.Debug|x86.Build.0 = Debug|Win32
+		{F1950589-C146-4E80-89AF-7771FD46B013}.Release|x64.ActiveCfg = Release|Win32
+		{F1950589-C146-4E80-89AF-7771FD46B013}.Release|x86.ActiveCfg = Release|Win32
+		{F1950589-C146-4E80-89AF-7771FD46B013}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
