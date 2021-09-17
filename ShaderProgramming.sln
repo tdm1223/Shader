@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UVAnimation", "UVAnimation\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShadowSpecularMapping", "ShadowMapping\ShadowMapping.vcxproj", "{77A47752-B983-429E-B08A-EE08518FAD7A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorConversion", "ColorConversion\ColorConversion.vcxproj", "{1528F938-88D5-451C-80AA-F652D7A8224B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -83,6 +85,12 @@ Global
 		{77A47752-B983-429E-B08A-EE08518FAD7A}.Release|x64.ActiveCfg = Release|Win32
 		{77A47752-B983-429E-B08A-EE08518FAD7A}.Release|x86.ActiveCfg = Release|Win32
 		{77A47752-B983-429E-B08A-EE08518FAD7A}.Release|x86.Build.0 = Release|Win32
+		{1528F938-88D5-451C-80AA-F652D7A8224B}.Debug|x64.ActiveCfg = Debug|Win32
+		{1528F938-88D5-451C-80AA-F652D7A8224B}.Debug|x86.ActiveCfg = Debug|Win32
+		{1528F938-88D5-451C-80AA-F652D7A8224B}.Debug|x86.Build.0 = Debug|Win32
+		{1528F938-88D5-451C-80AA-F652D7A8224B}.Release|x64.ActiveCfg = Release|Win32
+		{1528F938-88D5-451C-80AA-F652D7A8224B}.Release|x86.ActiveCfg = Release|Win32
+		{1528F938-88D5-451C-80AA-F652D7A8224B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="..\DirectManager\DirectManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorConversionManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\DirectManager\DirectManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorConversionManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DirectManager">
+      <UniqueIdentifier>{69e4d1dc-f394-4aea-af7a-e07109ef7436}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
