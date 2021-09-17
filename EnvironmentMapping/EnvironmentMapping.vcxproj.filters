@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="..\DirectManager\DirectManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvironmentMappingManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\DirectManager\DirectManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvironmentMappingManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DirectManager">
+      <UniqueIdentifier>{6c74d2f9-41a2-4e45-a4f9-360a4449025d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
