@@ -141,9 +141,9 @@ void DirectManager::RenderInfo(std::string str) noexcept
     // 텍스트를 출력할 위치
     RECT rct;
     rct.left = 5;
-    rct.right = Util::WIN_WIDTH / 3;
+    rct.right = Util::WIN_WIDTH;
     rct.top = 5;
-    rct.bottom = Util::WIN_HEIGHT / 3;
+    rct.bottom = Util::WIN_HEIGHT;
 
     // 텍스트 출력
     font->DrawText(NULL, str.c_str(), -1, &rct, 0, fontColor);
