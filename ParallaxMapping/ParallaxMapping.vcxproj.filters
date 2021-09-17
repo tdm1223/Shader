@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="..\DirectManager\DirectManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ParallaxMappingManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\DirectManager\DirectManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="ParallaxMappingManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DirectManager">
+      <UniqueIdentifier>{e71a607f-ec6b-4d12-aea5-08bfb117b5e1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
