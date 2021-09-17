@@ -50,7 +50,7 @@ public:
     LPDIRECT3DTEXTURE9 texture = NULL;
 
     // 초기화 함수
-    bool Init(HWND hWnd, std::string shaderName = "", std::string modelName = "", std::string textureName = "");
+    virtual bool Init(HWND hWnd, std::string shaderName = "", std::string modelName = "", std::string textureName = "");
     bool InitD3D(HWND hWnd) noexcept;
 
     // 로딩 관련 함수
