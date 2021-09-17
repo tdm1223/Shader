@@ -41,7 +41,7 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexce
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
     // 프로그램 이름
-    std::string appName = "Color Shader";
+    std::string appName = "Specular Mapping";
 
     gManager = std::make_unique<SpecularMappingManager>();
 
