@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\DirectManager\DirectManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="UVAnimationManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\DirectManager\DirectManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="UVAnimationManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DirectManager">
+      <UniqueIdentifier>{d7fd38fc-a731-4639-9ccb-8f33ca428c0d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
