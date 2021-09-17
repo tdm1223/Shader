@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="SpecularMappingManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DirectManager\DirectManager.cpp">
+      <Filter>DirectManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DirectManager">
+      <UniqueIdentifier>{b16e3762-99c1-4c8b-a5f4-04a584984f8a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SpecularMappingManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DirectManager\DirectManager.h">
+      <Filter>DirectManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

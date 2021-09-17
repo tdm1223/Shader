@@ -54,7 +54,7 @@ public:
     bool InitD3D(HWND hWnd) noexcept;
 
     // 로딩 관련 함수
-    bool LoadAssets(std::string shaderName = "", std::string modelName = "", std::string textureName = "");
+    virtual bool LoadAssets(std::string shaderName = "", std::string modelName = "", std::string textureName = "");
     LPD3DXEFFECT LoadShader(std::string filename);
     LPD3DXMESH LoadModel(std::string filename) noexcept;
     LPDIRECT3DTEXTURE9 LoadTexture(std::string filename) noexcept;
