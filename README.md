@@ -2,6 +2,11 @@
 
 ## Shader프로그래밍 연습
 
+```
+Visual Studio 2019
+Microsoft DirectX SDK (June 2010)
+```
+
 ### 1. BasicFramework
 
 ![BasicFramework](https://user-images.githubusercontent.com/21440957/50548540-12b32680-0c92-11e9-83cd-a3212292f6c9.png)
