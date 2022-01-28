@@ -1,7 +1,9 @@
 # Shader
 
-## Shader프로그래밍 연습
+## Shader programming practice
+[Book Info](http://www.yes24.com/Product/Goods/7366949)
 
+## Software used
 ```
 Visual Studio 2019
 Microsoft DirectX SDK (June 2010)
